@@ -1,9 +1,13 @@
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './app/providers/AuthProvider';
+import { AppRouter } from './app/router';
+
 export default function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold text-blue-500">
-        Checks Telehealth Frontend
-      </h1>
-    </div>
-  )
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
