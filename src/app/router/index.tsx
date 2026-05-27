@@ -4,6 +4,12 @@ import { useAuthContext } from '../providers/AuthProvider';
 import { MainLayout } from '../layouts/MainLayout';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { RegisterPage } from '../../features/auth/pages/RegisterPage';
+import { PatientDashboardPage } from '../../features/appointments/patient/PatientDashboardPage';
+import { DoctorDashboardPage } from '../../features/appointments/doctor/DoctorDashboardPage';
+import { PatientProfilePage } from '../../features/users/patient/PatientProfilePage';
+import { DoctorProfilePage as DoctorSelfEditProfilePage } from '../../features/users/doctor/DoctorProfilePage';
+import { DoctorListPage } from '../../features/doctors/patient/DoctorListPage';
+import { DoctorProfilePage as PatientDoctorProfilePage } from '../../features/doctors/patient/DoctorProfilePage';
 
 // ---------------------------------------------------------------------------
 // ProtectedLayout — guards + renders MainLayout (Outlet receives each page)
@@ -32,21 +38,6 @@ function RoleGuard({ role, children }: { role: 'patient' | 'doctor'; children: R
   return <>{children}</>;
 }
 
-// ---------------------------------------------------------------------------
-// Placeholder pages — replaced when those modules are built
-// ---------------------------------------------------------------------------
-function PatientDashboardPage() {
-  return (
-    <div className="text-muted-foreground">Patient dashboard — coming soon</div>
-  );
-}
-
-function DoctorDashboardPage() {
-  return (
-    <div className="text-muted-foreground">Doctor dashboard — coming soon</div>
-  );
-}
-
 function RoleDashboardRedirect() {
   const { user } = useAuthContext();
   if (!user) return null;
@@ -73,16 +64,32 @@ export function AppRouter() {
       <Route element={<ProtectedLayout />}>
         <Route path="/dashboard" element={<RoleDashboardRedirect />} />
 
-        {/* Patient */}
+        {/* ── Patient routes ─────────────────────────────────────────────── */}
         <Route
           path="/patient/dashboard"
           element={<RoleGuard role="patient"><PatientDashboardPage /></RoleGuard>}
         />
+        <Route
+          path="/patient/profile"
+          element={<RoleGuard role="patient"><PatientProfilePage /></RoleGuard>}
+        />
+        <Route
+          path="/patient/doctors"
+          element={<RoleGuard role="patient"><DoctorListPage /></RoleGuard>}
+        />
+        <Route
+          path="/patient/doctors/:id"
+          element={<RoleGuard role="patient"><PatientDoctorProfilePage /></RoleGuard>}
+        />
 
-        {/* Doctor */}
+        {/* ── Doctor routes ──────────────────────────────────────────────── */}
         <Route
           path="/doctor/dashboard"
           element={<RoleGuard role="doctor"><DoctorDashboardPage /></RoleGuard>}
+        />
+        <Route
+          path="/doctor/profile"
+          element={<RoleGuard role="doctor"><DoctorSelfEditProfilePage /></RoleGuard>}
         />
       </Route>
     </Routes>
