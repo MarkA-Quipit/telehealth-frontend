@@ -1,0 +1,161 @@
+import { useNavigate } from 'react-router-dom';
+import {
+  CalendarPlus,
+  CalendarCheck,
+  CalendarX,
+  CheckCircle,
+  Bell,
+} from 'lucide-react';
+import { useAuthContext } from '@/app/providers/AuthProvider';
+import type { Notification, NotificationType } from '../types';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+const TYPE_ICON: Record<NotificationType, React.ElementType> = {
+  appointment_booked:    CalendarPlus,
+  appointment_confirmed: CalendarCheck,
+  appointment_cancelled: CalendarX,
+  appointment_completed: CheckCircle,
+};
+
+const TYPE_ICON_COLOR: Record<NotificationType, string> = {
+  appointment_booked:    'text-sky-500',
+  appointment_confirmed: 'text-green-500',
+  appointment_cancelled: 'text-red-500',
+  appointment_completed: 'text-green-500',
+};
+
+function relativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton row
+// ---------------------------------------------------------------------------
+function SkeletonRow() {
+  return (
+    <div className="flex items-start gap-3 px-3 py-3 animate-pulse">
+      <div className="w-8 h-8 rounded-full bg-neutral-100 shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3 bg-neutral-100 rounded w-2/3" />
+        <div className="h-3 bg-neutral-100 rounded w-full" />
+        <div className="h-2.5 bg-neutral-100 rounded w-1/4" />
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
+interface NotificationListProps {
+  notifications: Notification[];
+  unreadCount: number;
+  isLoading: boolean;
+  markRead: (id: string) => void;
+  markAllRead: () => void;
+  onClose?: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+export function NotificationList({
+  notifications,
+  unreadCount,
+  isLoading,
+  markRead,
+  markAllRead,
+  onClose,
+}: NotificationListProps) {
+  const navigate = useNavigate();
+  const { user } = useAuthContext();
+  const isDoctor = user?.roles.includes('doctor') ?? false;
+
+  function handleRowClick(n: Notification) {
+    const appointmentId = n.data?.appointmentId as string | undefined;
+    if (appointmentId) {
+      const path = isDoctor
+        ? `/doctor/appointments/${appointmentId}`
+        : `/patient/appointments/${appointmentId}`;
+      navigate(path);
+    }
+    if (!n.isRead) markRead(n.id);
+    onClose?.();
+  }
+
+  return (
+    <div className="w-80 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-neutral-100">
+        <span className="text-sm font-semibold text-neutral-900">Notifications</span>
+        {unreadCount > 0 && (
+          <button
+            onClick={markAllRead}
+            className="text-xs text-sky-600 hover:text-sky-800 font-medium transition"
+          >
+            Mark all read
+          </button>
+        )}
+      </div>
+
+      {/* List */}
+      <div className="max-h-[360px] overflow-y-auto">
+        {isLoading ? (
+          <>
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+          </>
+        ) : notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <Bell className="w-8 h-8 text-neutral-300 mb-2" />
+            <p className="text-sm text-neutral-500">No notifications yet</p>
+          </div>
+        ) : (
+          notifications.map((n) => {
+            const Icon = TYPE_ICON[n.type] ?? Bell;
+            const iconColor = TYPE_ICON_COLOR[n.type] ?? 'text-neutral-400';
+            const hasAppointment = !!(n.data?.appointmentId);
+
+            return (
+              <button
+                key={n.id}
+                onClick={() => handleRowClick(n)}
+                className={`w-full text-left flex items-start gap-3 px-3 py-3 hover:bg-neutral-50 transition border-b border-neutral-50 last:border-0 ${
+                  !n.isRead ? 'border-l-2 border-l-sky-400' : ''
+                } ${hasAppointment ? 'cursor-pointer' : 'cursor-default'}`}
+              >
+                {/* Icon */}
+                <div className={`mt-0.5 shrink-0 ${iconColor}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm leading-snug ${
+                      !n.isRead ? 'font-medium text-neutral-900' : 'text-neutral-500'
+                    }`}
+                  >
+                    {n.title}
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{n.message}</p>
+                  <p className="text-xs text-neutral-400 mt-1">{relativeTime(n.createdAt)}</p>
+                </div>
+              </button>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}

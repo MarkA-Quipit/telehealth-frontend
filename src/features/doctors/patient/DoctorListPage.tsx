@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { useDoctors } from '../hooks/useDoctors';
 import { DoctorCard } from '../components/DoctorCard';
 import { DoctorFilter } from '../components/DoctorFilter';
 import type { DoctorFilters } from '../types';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/ui/collapsible';
+import { SymptomChecker } from '@/features/ai/components/SymptomChecker';
+import { useAuthContext } from '@/app/providers/AuthProvider';
 
 function CardSkeleton() {
   return (
@@ -25,6 +29,9 @@ function CardSkeleton() {
 }
 
 export function DoctorListPage() {
+  const { user } = useAuthContext();
+  const isPatient = user?.roles.includes('patient') ?? false;
+
   const [filters, setFilters] = useState<DoctorFilters>({ page: 1, limit: 9 });
   const { data, isLoading } = useDoctors(filters);
 
@@ -49,6 +56,21 @@ export function DoctorListPage() {
           Browse and connect with qualified healthcare professionals
         </p>
       </div>
+
+      {/* AI Symptom Checker — patients only */}
+      {isPatient && (
+        <Collapsible defaultOpen={false}>
+          <CollapsibleTrigger asChild>
+            <button className="flex items-center gap-2 border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 font-medium rounded-lg px-4 py-2 text-sm transition mb-4">
+              <Sparkles className="h-4 w-4 text-sky-500" />
+              Find doctors by symptoms
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mb-6">
+            <SymptomChecker />
+          </CollapsibleContent>
+        </Collapsible>
+      )}
 
       {/* Filter */}
       <DoctorFilter

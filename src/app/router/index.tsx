@@ -39,6 +39,9 @@ import { DoctorAppointmentDetailPage } from '../../features/appointments/doctor/
 // Doctor — consultation
 import { DoctorConsultationPage } from '../../features/consultations/doctor/ConsultationPage';
 
+// Doctor — availability
+import { DoctorAvailabilityPage } from '../../features/appointments/doctor/DoctorAvailabilityPage';
+
 // ---------------------------------------------------------------------------
 // ProtectedLayout — guards + renders MainLayout (Outlet receives each page)
 // ---------------------------------------------------------------------------
@@ -162,6 +165,10 @@ export function AppRouter() {
         <Route
           path="/doctor/appointments/:id"
           element={<RoleGuard role="doctor"><DoctorAppointmentDetailPage /></RoleGuard>}
+        />
+        <Route
+          path="/doctor/availability"
+          element={<RoleGuard role="doctor"><DoctorAvailabilityPage /></RoleGuard>}
         />
       </Route>
     </Routes>

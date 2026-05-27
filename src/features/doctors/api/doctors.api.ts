@@ -1,5 +1,15 @@
 import api from '@/shared/lib/api';
-import type { DoctorWithUser, DoctorFilters, UpdateDoctorDto, PaginatedDoctors, TimeSlot } from '../types';
+import type {
+  DoctorWithUser,
+  DoctorFilters,
+  UpdateDoctorDto,
+  PaginatedDoctors,
+  TimeSlot,
+  DoctorAvailability,
+  BlockedSlot,
+  AvailabilityInput,
+  BlockSlotInput,
+} from '../types';
 
 export async function listDoctors(filters: DoctorFilters): Promise<PaginatedDoctors> {
   const params = new URLSearchParams();
@@ -24,4 +34,36 @@ export async function updateDoctor(id: string, dto: UpdateDoctorDto): Promise<Do
 export async function getAvailableSlots(doctorId: string, date: string): Promise<TimeSlot[]> {
   const { data } = await api.get(`/api/doctors/${doctorId}/slots?date=${date}`);
   return data.data;
+}
+
+export async function getAvailability(doctorId: string): Promise<DoctorAvailability[]> {
+  const { data } = await api.get(`/api/doctors/${doctorId}/availability`);
+  return data.data;
+}
+
+export async function setAvailability(
+  doctorId: string,
+  slots: AvailabilityInput[],
+): Promise<DoctorAvailability[]> {
+  const { data } = await api.put(`/api/doctors/${doctorId}/availability`, {
+    availability: slots,
+  });
+  return data.data;
+}
+
+export async function getBlockedSlots(doctorId: string): Promise<BlockedSlot[]> {
+  const { data } = await api.get(`/api/doctors/${doctorId}/blocked-slots`);
+  return data.data;
+}
+
+export async function addBlockedSlot(
+  doctorId: string,
+  input: BlockSlotInput,
+): Promise<BlockedSlot> {
+  const { data } = await api.post(`/api/doctors/${doctorId}/blocked-slots`, input);
+  return data.data;
+}
+
+export async function deleteBlockedSlot(doctorId: string, slotId: string): Promise<void> {
+  await api.delete(`/api/doctors/${doctorId}/blocked-slots/${slotId}`);
 }

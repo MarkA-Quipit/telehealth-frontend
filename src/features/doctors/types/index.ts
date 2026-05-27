@@ -43,3 +43,36 @@ export interface TimeSlot {
   startTime: string; // "HH:MM"
   endTime: string;   // "HH:MM"
 }
+
+export interface DoctorAvailability {
+  id: string;
+  doctorId: string;
+  dayOfWeek: number; // 0=Sun … 6=Sat
+  startTime: string; // "HH:MM"
+  endTime: string;   // "HH:MM"
+  isAvailable: boolean;
+}
+
+export interface BlockedSlot {
+  id: string;
+  doctorId: string;
+  blockedDate: string; // "YYYY-MM-DD"
+  startTime: string;   // "HH:MM"
+  endTime: string;     // "HH:MM"
+  reason: string | null;
+  createdAt: string;
+}
+
+export interface AvailabilityInput {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+}
+
+export interface BlockSlotInput {
+  blockedDate: string;
+  startTime: string;
+  endTime: string;
+  reason?: string;
+}

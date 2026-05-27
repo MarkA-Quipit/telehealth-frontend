@@ -16,4 +16,7 @@ export const QUERY_KEYS = {
     notes: (id: string) => ['appointments', id, 'notes'] as const,
     prescriptions: (id: string) => ['appointments', id, 'prescriptions'] as const,
   },
+  notifications: {
+    all: () => ['notifications'] as const,
+  },
 };
