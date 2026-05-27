@@ -1,5 +1,5 @@
 import api from '@/shared/lib/api';
-import type { DoctorWithUser, DoctorFilters, UpdateDoctorDto, PaginatedDoctors } from '../types';
+import type { DoctorWithUser, DoctorFilters, UpdateDoctorDto, PaginatedDoctors, TimeSlot } from '../types';
 
 export async function listDoctors(filters: DoctorFilters): Promise<PaginatedDoctors> {
   const params = new URLSearchParams();
@@ -18,5 +18,10 @@ export async function getDoctorById(id: string): Promise<DoctorWithUser> {
 
 export async function updateDoctor(id: string, dto: UpdateDoctorDto): Promise<DoctorWithUser> {
   const { data } = await api.put(`/api/doctors/${id}`, dto);
+  return data.data;
+}
+
+export async function getAvailableSlots(doctorId: string, date: string): Promise<TimeSlot[]> {
+  const { data } = await api.get(`/api/doctors/${doctorId}/slots?date=${date}`);
   return data.data;
 }

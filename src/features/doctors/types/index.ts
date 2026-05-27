@@ -38,3 +38,8 @@ export interface PaginatedDoctors {
   limit: number;
   totalPages: number;
 }
+
+export interface TimeSlot {
+  startTime: string; // "HH:MM"
+  endTime: string;   // "HH:MM"
+}
