@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bell } from 'lucide-react';
-import * as Popover from 'radix-ui/react-popover';
+import * as Popover from '@radix-ui/react-popover';
 import { NotificationList } from './NotificationList';
 import { useNotifications } from '../hooks/useNotifications';
 
