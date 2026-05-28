@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDoctor, useDoctorReviews } from '../hooks/useDoctors';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import type { Review } from '../types';
 
 function getInitials(firstName: string, lastName: string): string {
@@ -254,7 +255,7 @@ export function DoctorProfilePage() {
                     : 'bg-neutral-100 text-neutral-500'
                 }`}
               >
-                {doctor.isAcceptingPatients ? 'Accepting Patients' : 'Not Accepting'}
+                {doctor.isAcceptingPatients ? 'Accepting' : 'Not Accepting'}
               </span>
               {doctor.isVerified && (
                 <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-sky-100 text-sky-700">
@@ -296,14 +297,28 @@ export function DoctorProfilePage() {
       </div>
 
       {/* Book CTA */}
-      {doctor.isAcceptingPatients && (
-        <button
-          onClick={() => navigate(`/patient/appointments/book?doctorId=${doctor.id}`)}
-          className="w-full bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-3 text-sm transition"
-        >
-          Book Appointment
-        </button>
-      )}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="w-full">
+              <button
+                onClick={() => doctor.isAcceptingPatients ? navigate(`/patient/appointments/book?doctorId=${doctor.id}`) : undefined}
+                disabled={!doctor.isAcceptingPatients}
+                className={`w-full font-medium rounded-lg px-4 py-3 text-sm transition ${
+                  doctor.isAcceptingPatients
+                    ? 'bg-sky-100 text-sky-700 hover:bg-sky-200'
+                    : 'bg-sky-100 text-sky-700 opacity-50 cursor-not-allowed'
+                }`}
+              >
+                Book Appointment
+              </button>
+            </span>
+          </TooltipTrigger>
+          {!doctor.isAcceptingPatients && (
+            <TooltipContent side="top">Currently Not Accepting</TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Reviews */}
       <ReviewsSection doctorId={doctor.id} />

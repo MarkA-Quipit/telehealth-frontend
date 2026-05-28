@@ -16,6 +16,10 @@ export async function listDoctors(filters: DoctorFilters): Promise<PaginatedDoct
   const params = new URLSearchParams();
   if (filters.specialization) params.set('specialization', filters.specialization);
   if (filters.search) params.set('search', filters.search);
+  if (filters.minFee != null) params.set('minFee', String(filters.minFee));
+  if (filters.maxFee != null) params.set('maxFee', String(filters.maxFee));
+  if (filters.minExperience != null) params.set('minExperience', String(filters.minExperience));
+  if (filters.minRating != null) params.set('minRating', String(filters.minRating));
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
   const { data } = await api.get(`/api/doctors?${params.toString()}`);

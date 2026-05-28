@@ -46,6 +46,7 @@ export function AvailabilityCalendar({ doctorId, selectedSlot, onSlotSelect }: P
     queryKey: QUERY_KEYS.doctors.slots(doctorId, dateStr),
     queryFn: () => getAvailableSlots(doctorId, dateStr),
     enabled: !!dateStr,
+    staleTime: 0,
   });
 
   function handleDateSelect(date: Date | undefined) {

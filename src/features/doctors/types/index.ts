@@ -37,6 +37,10 @@ export interface Review {
 export interface DoctorFilters {
   specialization?: string;
   search?: string;
+  minFee?: number;        // centavos
+  maxFee?: number;        // centavos
+  minExperience?: number; // years
+  minRating?: number;     // 1–5
   page?: number;
   limit?: number;
 }
