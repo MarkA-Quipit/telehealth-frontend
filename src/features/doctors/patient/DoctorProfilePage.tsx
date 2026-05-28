@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { useDoctor } from '../hooks/useDoctors';
+import { useDoctor, useDoctorReviews } from '../hooks/useDoctors';
+import type { Review } from '../types';
 
 function getInitials(firstName: string, lastName: string): string {
   return (firstName[0]?.toUpperCase() ?? '') + (lastName[0]?.toUpperCase() ?? '');
@@ -25,6 +26,140 @@ function ProfileSkeleton() {
   );
 }
 
+function StarDisplay({ rating }: { rating: number }) {
+  return (
+    <span className="flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span
+          key={i}
+          className={i < Math.round(rating) ? 'text-amber-400' : 'text-neutral-300'}
+          style={{ fontSize: '1rem' }}
+        >
+          ★
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function ReviewsSection({ doctorId }: { doctorId: string }) {
+  const { data: reviews = [], isLoading } = useDoctorReviews(doctorId);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3 animate-pulse">
+        <div className="h-5 bg-neutral-200 rounded w-1/4" />
+        <div className="h-12 bg-neutral-200 rounded-lg" />
+        <div className="h-20 bg-neutral-200 rounded-lg" />
+      </div>
+    );
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
+        <h3 className="text-base font-semibold text-neutral-900 mb-4">Reviews</h3>
+        <p className="text-sm text-neutral-400 italic">No reviews yet</p>
+      </div>
+    );
+  }
+
+  const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const total = reviews.length;
+
+  // Count per star level
+  const starCounts = [5, 4, 3, 2, 1].map((star) => ({
+    star,
+    count: reviews.filter((r) => r.rating === star).length,
+  }));
+
+  return (
+    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-5">
+      <h3 className="text-base font-semibold text-neutral-900">Reviews</h3>
+
+      {/* Summary */}
+      <div className="flex items-start gap-6">
+        <div className="text-center shrink-0">
+          <p className="text-4xl font-semibold text-neutral-900">{avg.toFixed(1)}</p>
+          <StarDisplay rating={avg} />
+          <p className="text-xs text-neutral-500 mt-1">{total} {total === 1 ? 'review' : 'reviews'}</p>
+        </div>
+
+        {/* Star breakdown bars */}
+        <div className="flex-1 space-y-1.5">
+          {starCounts.map(({ star, count }) => {
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+            return (
+              <div key={star} className="flex items-center gap-2 text-xs text-neutral-500">
+                <span className="w-6 text-right shrink-0">{star}★</span>
+                <div className="flex-1 h-2 rounded-full bg-neutral-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-amber-400 transition-all"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="w-8 shrink-0">{pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Review list */}
+      <div className="divide-y divide-neutral-100">
+        {reviews.map((review: Review) => {
+          const patientInitials =
+            (review.patient.firstName[0]?.toUpperCase() ?? '') +
+            (review.patient.lastName[0]?.toUpperCase() ?? '');
+          const reviewDate = new Date(review.createdAt).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+
+          return (
+            <div key={review.id} className="py-4 space-y-1.5">
+              <div className="flex items-center gap-3">
+                {review.patient.profilePictureUrl ? (
+                  <img
+                    src={review.patient.profilePictureUrl}
+                    alt=""
+                    className="w-8 h-8 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-700 font-semibold flex items-center justify-center text-xs shrink-0">
+                    {patientInitials}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-neutral-900">
+                    {review.patient.firstName} {review.patient.lastName}
+                  </p>
+                  <p className="text-xs text-neutral-400">{reviewDate}</p>
+                </div>
+                <div className="ml-auto flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={i < review.rating ? 'text-amber-400' : 'text-neutral-300'}
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {review.comment && (
+                <p className="text-sm text-neutral-600 leading-relaxed pl-11">{review.comment}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function DoctorProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -41,9 +176,7 @@ export function DoctorProfilePage() {
           </svg>
         </div>
         <h3 className="text-sm font-semibold text-neutral-900 mb-1">Doctor not found</h3>
-        <p className="text-sm text-neutral-500 mb-4">
-          This doctor profile could not be loaded.
-        </p>
+        <p className="text-sm text-neutral-500 mb-4">This doctor profile could not be loaded.</p>
         <button
           onClick={() => navigate('/patient/doctors')}
           className="bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition"
@@ -63,15 +196,15 @@ export function DoctorProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Back link */}
+      {/* Back link — hardcoded to avoid history-stack issues after booking */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/patient/doctors')}
         className="text-sm text-sky-600 hover:text-sky-800 font-medium transition flex items-center gap-1"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Back
+        Back to Doctors
       </button>
 
       {/* Hero card */}
@@ -92,6 +225,26 @@ export function DoctorProfilePage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">{fullName}</h1>
             <p className="text-sm text-neutral-500 mt-0.5">{doctor.specialization}</p>
+
+            {/* Star rating — hidden if no reviews */}
+            {doctor.reviewCount > 0 && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <StarDisplay rating={doctor.averageRating ?? 0} />
+                <span className="text-sm font-medium text-neutral-700">
+                  {(doctor.averageRating ?? 0).toFixed(1)}
+                </span>
+                <span className="text-sm text-neutral-500">
+                  · {doctor.reviewCount} {doctor.reviewCount === 1 ? 'review' : 'reviews'}
+                </span>
+              </div>
+            )}
+
+            {/* Completed consultations */}
+            {doctor.completedConsultationsCount > 0 && (
+              <p className="text-sm text-neutral-500 mt-0.5">
+                {doctor.completedConsultationsCount} completed {doctor.completedConsultationsCount === 1 ? 'consultation' : 'consultations'}
+              </p>
+            )}
 
             <div className="mt-2 flex flex-wrap gap-2">
               <span
@@ -151,6 +304,9 @@ export function DoctorProfilePage() {
           Book Appointment
         </button>
       )}
+
+      {/* Reviews */}
+      <ReviewsSection doctorId={doctor.id} />
     </div>
   );
 }

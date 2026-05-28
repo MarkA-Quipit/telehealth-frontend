@@ -9,6 +9,7 @@ import type {
   BlockedSlot,
   AvailabilityInput,
   BlockSlotInput,
+  Review,
 } from '../types';
 
 export async function listDoctors(filters: DoctorFilters): Promise<PaginatedDoctors> {
@@ -66,4 +67,22 @@ export async function addBlockedSlot(
 
 export async function deleteBlockedSlot(doctorId: string, slotId: string): Promise<void> {
   await api.delete(`/api/doctors/${doctorId}/blocked-slots/${slotId}`);
+}
+
+export async function getSpecializations(): Promise<string[]> {
+  const { data } = await api.get('/api/doctors/specializations');
+  return data.data;
+}
+
+export async function getDoctorReviews(doctorId: string): Promise<Review[]> {
+  const { data } = await api.get(`/api/doctors/${doctorId}/reviews`);
+  return data.data;
+}
+
+export async function submitReview(
+  doctorId: string,
+  payload: { appointmentId: string; rating: number; comment?: string },
+): Promise<Review> {
+  const { data } = await api.post(`/api/doctors/${doctorId}/reviews`, payload);
+  return data.data;
 }

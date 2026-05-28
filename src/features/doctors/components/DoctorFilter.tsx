@@ -1,16 +1,24 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { getSpecializations } from '../api/doctors.api';
+import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { DoctorFilters } from '../types';
 
 interface DoctorFilterProps {
   filters: DoctorFilters;
   onFilterChange: (filters: DoctorFilters) => void;
-  specializations: string[];
 }
 
-export function DoctorFilter({ filters, onFilterChange, specializations }: DoctorFilterProps) {
+export function DoctorFilter({ filters, onFilterChange }: DoctorFilterProps) {
   const [searchInput, setSearchInput] = useState(filters.search ?? '');
   const debouncedSearch = useDebounce(searchInput, 300);
+
+  const { data: specializations = [] } = useQuery({
+    queryKey: QUERY_KEYS.doctors.specializations(),
+    queryFn: getSpecializations,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Push debounced search to parent
   useEffect(() => {

@@ -63,6 +63,7 @@ export function DoctorAvailabilityPage() {
   const [blockedLoading, setBlockedLoading] = useState(true);
 
   // Add blocked slot form
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newDate, setNewDate] = useState('');
   const [newStart, setNewStart] = useState('');
   const [newEnd, setNewEnd] = useState('');
@@ -154,6 +155,7 @@ export function DoctorAvailabilityPage() {
       setNewStart('');
       setNewEnd('');
       setNewReason('');
+      setShowAddForm(false);
       toast.success('Blocked slot added');
     } catch {
       toast.error('Failed to add blocked slot');
@@ -324,62 +326,72 @@ export function DoctorAvailabilityPage() {
 
       {/* ── Blocked Slots Card ───────────────────────────────────────────── */}
       <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-5">
-        <h2 className="text-base font-semibold text-neutral-900">Blocked Slots</h2>
-
-        {/* Add form */}
-        <div className="border border-neutral-100 rounded-xl p-4 space-y-3 bg-neutral-50">
-          <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Add Blocked Slot</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-neutral-600">Date</label>
-              <input
-                type="date"
-                min={todayISO()}
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-neutral-600">Start time</label>
-              <input
-                type="time"
-                value={newStart}
-                onChange={(e) => setNewStart(e.target.value)}
-                className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-neutral-600">End time</label>
-              <input
-                type="time"
-                value={newEnd}
-                onChange={(e) => setNewEnd(e.target.value)}
-                className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-neutral-600">Reason (optional)</label>
-              <input
-                type="text"
-                placeholder="e.g. Personal appointment"
-                value={newReason}
-                onChange={(e) => setNewReason(e.target.value)}
-                className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <button
-              onClick={handleAddSlot}
-              disabled={addingSlot}
-              className="flex items-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {addingSlot && <Loader2 className="h-4 w-4 animate-spin" />}
-              Add
-            </button>
-          </div>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-neutral-900">Blocked Slots</h2>
+          <button
+            onClick={() => setShowAddForm((v) => !v)}
+            className="flex items-center gap-1.5 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-3 py-1.5 text-sm transition"
+          >
+            {showAddForm ? 'Cancel' : 'Add'}
+          </button>
         </div>
+
+        {/* Add form — collapsed by default, toggled by "Add" button */}
+        {showAddForm && (
+          <div className="border border-neutral-100 rounded-xl p-4 space-y-3 bg-neutral-50">
+            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">New Blocked Slot</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-neutral-600">Date</label>
+                <input
+                  type="date"
+                  min={todayISO()}
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-neutral-600">Start time</label>
+                <input
+                  type="time"
+                  value={newStart}
+                  onChange={(e) => setNewStart(e.target.value)}
+                  className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-neutral-600">End time</label>
+                <input
+                  type="time"
+                  value={newEnd}
+                  onChange={(e) => setNewEnd(e.target.value)}
+                  className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-neutral-600">Reason (optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Personal appointment"
+                  value={newReason}
+                  onChange={(e) => setNewReason(e.target.value)}
+                  className="w-full h-9 rounded-lg bg-white border border-neutral-200 px-3 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={handleAddSlot}
+                disabled={addingSlot}
+                className="flex items-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {addingSlot && <Loader2 className="h-4 w-4 animate-spin" />}
+                Save
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Blocked slots list */}
         {blockedLoading ? (

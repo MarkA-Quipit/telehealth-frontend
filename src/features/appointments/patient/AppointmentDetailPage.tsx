@@ -3,6 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAppointment, useCancelAppointment, useNotes, usePrescriptions } from '../hooks/useAppointments';
+import { useDoctorReviews } from '@/features/doctors/hooks/useDoctors';
+import { submitReview } from '@/features/doctors/api/doctors.api';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import { AppointmentStatusBadge } from '../components/AppointmentStatusBadge';
 
 function SkeletonPage() {
@@ -18,11 +22,139 @@ function SkeletonPage() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Star selector
+// ---------------------------------------------------------------------------
+function StarSelector({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          onMouseEnter={() => setHovered(star)}
+          onMouseLeave={() => setHovered(0)}
+          className="text-2xl transition-colors focus:outline-none"
+          style={{ color: star <= (hovered || value) ? '#f59e0b' : '#d1d5db' }}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Leave Review section
+// ---------------------------------------------------------------------------
+function LeaveReviewSection({
+  appointmentId,
+  doctorId,
+}: {
+  appointmentId: string;
+  doctorId: string;
+}) {
+  const queryClient = useQueryClient();
+  const { data: reviews = [] } = useDoctorReviews(doctorId);
+
+  const existing = reviews.find((r) => r.appointmentId === appointmentId);
+
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState<{ rating: number; comment: string | null } | null>(
+    existing ? { rating: existing.rating, comment: existing.comment } : null,
+  );
+
+  if (submitted) {
+    return (
+      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-2">
+        <h3 className="text-base font-semibold text-neutral-900">Your Review</h3>
+        <div className="flex gap-0.5">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <span key={s} style={{ color: s <= submitted.rating ? '#f59e0b' : '#d1d5db', fontSize: '1.2rem' }}>
+              ★
+            </span>
+          ))}
+        </div>
+        {submitted.comment && (
+          <p className="text-sm text-neutral-600 leading-relaxed">{submitted.comment}</p>
+        )}
+      </div>
+    );
+  }
+
+  async function handleSubmit() {
+    if (!rating) {
+      toast.error('Please select a star rating');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await submitReview(doctorId, { appointmentId, rating, comment: comment || undefined });
+      toast.success('Review submitted');
+      setSubmitted({ rating, comment: comment || null });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.doctors.reviews(doctorId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.doctors.detail(doctorId) });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to submit review';
+      if (msg.includes('already')) {
+        toast.error("You've already reviewed this consultation");
+        setSubmitted({ rating, comment: comment || null });
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-4">
+      <h3 className="text-base font-semibold text-neutral-900">Leave a Review</h3>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-neutral-700">Rating</label>
+        <StarSelector value={rating} onChange={setRating} />
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium text-neutral-700">
+          Comment <span className="text-neutral-400 font-normal">(optional)</span>
+        </label>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          maxLength={1000}
+          rows={3}
+          placeholder="Share your experience…"
+          className="w-full rounded-lg bg-neutral-100 px-3 py-2 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition resize-none"
+        />
+        <p className="text-xs text-neutral-400 text-right">{comment.length}/1000</p>
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={submitting || !rating}
+        className="bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {submitting ? 'Submitting…' : 'Submit Review'}
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main page
+// ---------------------------------------------------------------------------
 export function AppointmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [cancelReason, setCancelReason] = useState('');
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
 
   const { data: appointment, isLoading } = useAppointment(id);
   const cancelMutation = useCancelAppointment();
@@ -45,11 +177,11 @@ export function AppointmentDetailPage() {
   const endsAt = new Date(appointment.endsAt);
   const now = new Date();
 
-  // Join eligibility: confirmed + within [scheduled - 5min, ends + 15min]
   const joinStart = new Date(scheduled.getTime() - 5 * 60 * 1000);
   const joinEnd   = new Date(endsAt.getTime() + 15 * 60 * 1000);
   const isEligible = appointment.status === 'confirmed' && now >= joinStart && now <= joinEnd;
   const isConfirmed = appointment.status === 'confirmed';
+  const isActionable = appointment.status === 'pending' || appointment.status === 'confirmed';
 
   async function handleCancel() {
     if (!id) return;
@@ -59,6 +191,20 @@ export function AppointmentDetailPage() {
       setCancelOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to cancel');
+    }
+  }
+
+  async function handleReschedule() {
+    if (!id || !appointment) return;
+    try {
+      await cancelMutation.mutateAsync({
+        id,
+        dto: { cancellationReason: 'Rescheduled by patient' },
+      });
+      setRescheduleOpen(false);
+      navigate(`/patient/appointments/book?doctorId=${appointment.doctor.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel for reschedule');
     }
   }
 
@@ -131,49 +277,86 @@ export function AppointmentDetailPage() {
         </div>
       </div>
 
-      {/* Cancel appointment */}
-      {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
-        <Dialog.Root open={cancelOpen} onOpenChange={setCancelOpen}>
-          <Dialog.Trigger asChild>
-            <button className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2.5 text-sm transition">
-              Cancel Appointment
-            </button>
-          </Dialog.Trigger>
-          <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-            <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-md p-6 z-50 space-y-4">
-              <Dialog.Title className="text-base font-semibold text-neutral-900">
-                Cancel Appointment
-              </Dialog.Title>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-neutral-700">
-                  Reason for cancellation (optional)
-                </label>
-                <textarea
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  rows={3}
-                  placeholder="Reason for cancellation (optional)"
-                  className="w-full rounded-lg bg-neutral-100 px-3 py-2 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition resize-none"
-                />
-              </div>
-              <div className="flex gap-3">
-                <Dialog.Close asChild>
-                  <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition">
-                    Keep Appointment
+      {/* Cancel + Reschedule — shown when pending or confirmed */}
+      {isActionable && (
+        <div className="flex gap-3">
+          {/* Reschedule */}
+          <Dialog.Root open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+            <Dialog.Trigger asChild>
+              <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 font-medium rounded-lg px-4 py-2.5 text-sm transition">
+                Reschedule
+              </button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+              <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-md p-6 z-50 space-y-4">
+                <Dialog.Title className="text-base font-semibold text-neutral-900">
+                  Reschedule Appointment
+                </Dialog.Title>
+                <p className="text-sm text-neutral-600">
+                  Rescheduling will cancel this appointment and take you to book a new time with the same doctor.
+                </p>
+                <div className="flex gap-3">
+                  <Dialog.Close asChild>
+                    <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition">
+                      Keep Appointment
+                    </button>
+                  </Dialog.Close>
+                  <button
+                    onClick={handleReschedule}
+                    disabled={cancelMutation.isPending}
+                    className="flex-1 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
+                  >
+                    {cancelMutation.isPending ? 'Processing…' : 'Confirm Reschedule'}
                   </button>
-                </Dialog.Close>
-                <button
-                  onClick={handleCancel}
-                  disabled={cancelMutation.isPending}
-                  className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
-                >
-                  {cancelMutation.isPending ? 'Cancelling…' : 'Cancel Appointment'}
-                </button>
-              </div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+
+          {/* Cancel */}
+          <Dialog.Root open={cancelOpen} onOpenChange={setCancelOpen}>
+            <Dialog.Trigger asChild>
+              <button className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2.5 text-sm transition">
+                Cancel Appointment
+              </button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+              <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-md p-6 z-50 space-y-4">
+                <Dialog.Title className="text-base font-semibold text-neutral-900">
+                  Cancel Appointment
+                </Dialog.Title>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-neutral-700">
+                    Reason for cancellation (optional)
+                  </label>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    rows={3}
+                    placeholder="Reason for cancellation (optional)"
+                    className="w-full rounded-lg bg-neutral-100 px-3 py-2 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition resize-none"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Dialog.Close asChild>
+                    <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition">
+                      Keep Appointment
+                    </button>
+                  </Dialog.Close>
+                  <button
+                    onClick={handleCancel}
+                    disabled={cancelMutation.isPending}
+                    className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
+                  >
+                    {cancelMutation.isPending ? 'Cancelling…' : 'Cancel Appointment'}
+                  </button>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+        </div>
       )}
 
       {/* Medical records — completed only */}
@@ -235,6 +418,12 @@ export function AppointmentDetailPage() {
               <p className="text-sm text-neutral-500">No prescriptions issued</p>
             )}
           </div>
+
+          {/* Leave a Review */}
+          <LeaveReviewSection
+            appointmentId={appointment.id}
+            doctorId={appointment.doctor.id}
+          />
         </>
       )}
     </div>

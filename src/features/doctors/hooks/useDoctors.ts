@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listDoctors, getDoctorById, updateDoctor } from '../api/doctors.api';
+import { listDoctors, getDoctorById, updateDoctor, getDoctorReviews } from '../api/doctors.api';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { DoctorFilters, UpdateDoctorDto } from '../types';
 
@@ -15,6 +15,14 @@ export function useDoctor(id?: string | null) {
     queryKey: QUERY_KEYS.doctors.detail(id ?? ''),
     queryFn: () => getDoctorById(id!),
     enabled: !!id,
+  });
+}
+
+export function useDoctorReviews(doctorId?: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.doctors.reviews(doctorId ?? ''),
+    queryFn: () => getDoctorReviews(doctorId!),
+    enabled: !!doctorId,
   });
 }
 

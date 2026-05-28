@@ -35,11 +35,6 @@ export function DoctorListPage() {
   const [filters, setFilters] = useState<DoctorFilters>({ page: 1, limit: 9 });
   const { data, isLoading } = useDoctors(filters);
 
-  // Extract distinct specializations from current results for the filter dropdown
-  const specializations = Array.from(
-    new Set((data?.items ?? []).map((d) => d.specialization).filter(Boolean)),
-  ).sort();
-
   const totalPages = data?.totalPages ?? 1;
   const currentPage = data?.page ?? 1;
 
@@ -76,7 +71,6 @@ export function DoctorListPage() {
       <DoctorFilter
         filters={filters}
         onFilterChange={handleFilterChange}
-        specializations={specializations}
       />
 
       {/* Grid */}

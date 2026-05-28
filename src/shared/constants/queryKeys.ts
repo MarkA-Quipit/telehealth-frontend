@@ -9,6 +9,8 @@ export const QUERY_KEYS = {
     all: (filters?: object) => ['doctors', filters] as const,
     detail: (id: string) => ['doctors', id] as const,
     slots: (id: string, date: string) => ['doctors', id, 'slots', date] as const,
+    specializations: () => ['doctors', 'specializations'] as const,
+    reviews: (id: string) => ['doctors', id, 'reviews'] as const,
   },
   appointments: {
     all: (filters?: object) => ['appointments', filters] as const,

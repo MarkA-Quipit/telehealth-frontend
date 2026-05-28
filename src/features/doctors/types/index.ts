@@ -13,6 +13,25 @@ export interface DoctorWithUser {
   isVerified: boolean;
   profilePictureUrl?: string;
   phoneNumber?: string;
+  // computed stats
+  averageRating: number | null;
+  reviewCount: number;
+  completedConsultationsCount: number;
+}
+
+export interface Review {
+  id: string;
+  appointmentId: string;
+  patientId: string;
+  doctorId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  patient: {
+    firstName: string;
+    lastName: string;
+    profilePictureUrl: string | null;
+  };
 }
 
 export interface DoctorFilters {
