@@ -74,6 +74,7 @@ export interface DoctorAvailability {
   startTime: string; // "HH:MM"
   endTime: string;   // "HH:MM"
   isAvailable: boolean;
+  slotDurationMinutes: number;
 }
 
 export interface BlockedSlot {
@@ -83,6 +84,7 @@ export interface BlockedSlot {
   startTime: string;   // "HH:MM"
   endTime: string;     // "HH:MM"
   reason: string | null;
+  recurrenceType: "none" | "weekly";
   createdAt: string;
 }
 
@@ -91,6 +93,7 @@ export interface AvailabilityInput {
   startTime: string;
   endTime: string;
   isAvailable: boolean;
+  slotDurationMinutes: number;
 }
 
 export interface BlockSlotInput {
@@ -98,4 +101,5 @@ export interface BlockSlotInput {
   startTime: string;
   endTime: string;
   reason?: string;
+  recurrenceType?: "none" | "weekly";
 }

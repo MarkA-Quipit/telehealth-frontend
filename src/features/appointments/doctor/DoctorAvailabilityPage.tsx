@@ -27,13 +27,16 @@ const DAYS = [
   { index: 6, short: 'Sat', label: 'Saturday' },
 ];
 
+const SLOT_DURATIONS = [15, 30, 45, 60] as const;
+
 interface DayState {
   isAvailable: boolean;
   startTime: string;
   endTime: string;
+  slotDurationMinutes: number;
 }
 
-const DEFAULT_DAY: DayState = { isAvailable: false, startTime: '09:00', endTime: '17:00' };
+const DEFAULT_DAY: DayState = { isAvailable: false, startTime: '09:00', endTime: '17:00', slotDurationMinutes: 30 };
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -65,6 +68,7 @@ export function DoctorAvailabilityPage() {
   const [newStart, setNewStart] = useState('');
   const [newEnd, setNewEnd] = useState('');
   const [newReason, setNewReason] = useState('');
+  const [newRecurrence, setNewRecurrence] = useState<'none' | 'weekly'>('none');
   const [addingSlot, setAddingSlot] = useState(false);
 
   // ── Load availability on mount ────────────────────────────────────────────
@@ -81,6 +85,7 @@ export function DoctorAvailabilityPage() {
             isAvailable: row.isAvailable,
             startTime: row.startTime,
             endTime: row.endTime,
+            slotDurationMinutes: row.slotDurationMinutes ?? 30,
           };
         }
         setSchedule(next);
@@ -116,6 +121,7 @@ export function DoctorAvailabilityPage() {
         startTime: schedule[index].startTime,
         endTime: schedule[index].endTime,
         isAvailable: schedule[index].isAvailable,
+        slotDurationMinutes: schedule[index].slotDurationMinutes,
       }));
       await setAvailability(doctorId, slots);
       toast.success('Schedule saved');
@@ -146,12 +152,14 @@ export function DoctorAvailabilityPage() {
         startTime: newStart,
         endTime: newEnd,
         reason: newReason || undefined,
+        recurrenceType: newRecurrence,
       });
       setBlockedSlots((prev) => [...prev, slot].sort((a, b) => a.blockedDate.localeCompare(b.blockedDate)));
       setNewDate('');
       setNewStart('');
       setNewEnd('');
       setNewReason('');
+      setNewRecurrence('none');
       setShowAddForm(false);
       toast.success('Blocked slot added');
     } catch {
@@ -228,7 +236,7 @@ export function DoctorAvailabilityPage() {
                       </div>
                     </label>
 
-                    {/* Times */}
+                    {/* Times + duration */}
                     {day.isAvailable && (
                       <div className="flex flex-col gap-1">
                         <input
@@ -243,6 +251,15 @@ export function DoctorAvailabilityPage() {
                           onChange={(e) => updateDay(index, { endTime: e.target.value })}
                           className="w-full h-8 rounded-lg bg-neutral-100 px-2 text-xs focus:bg-white focus:border focus:border-sky-400 outline-none"
                         />
+                        <select
+                          value={day.slotDurationMinutes}
+                          onChange={(e) => updateDay(index, { slotDurationMinutes: Number(e.target.value) })}
+                          className="w-full h-8 rounded-lg bg-neutral-100 px-2 text-xs focus:bg-white focus:border focus:border-sky-400 outline-none"
+                        >
+                          {SLOT_DURATIONS.map((d) => (
+                            <option key={d} value={d}>{d} min</option>
+                          ))}
+                        </select>
                       </div>
                     )}
                   </div>
@@ -283,20 +300,31 @@ export function DoctorAvailabilityPage() {
                     </label>
 
                     {day.isAvailable ? (
-                      <div className="flex items-center gap-2 flex-1">
-                        <input
-                          type="time"
-                          value={day.startTime}
-                          onChange={(e) => updateDay(index, { startTime: e.target.value })}
-                          className="h-9 rounded-lg bg-neutral-100 px-2 text-sm focus:bg-white focus:border focus:border-sky-400 outline-none"
-                        />
-                        <span className="text-neutral-400 text-xs">–</span>
-                        <input
-                          type="time"
-                          value={day.endTime}
-                          onChange={(e) => updateDay(index, { endTime: e.target.value })}
-                          className="h-9 rounded-lg bg-neutral-100 px-2 text-sm focus:bg-white focus:border focus:border-sky-400 outline-none"
-                        />
+                      <div className="flex flex-col gap-1.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            value={day.startTime}
+                            onChange={(e) => updateDay(index, { startTime: e.target.value })}
+                            className="h-9 rounded-lg bg-neutral-100 px-2 text-sm focus:bg-white focus:border focus:border-sky-400 outline-none"
+                          />
+                          <span className="text-neutral-400 text-xs">–</span>
+                          <input
+                            type="time"
+                            value={day.endTime}
+                            onChange={(e) => updateDay(index, { endTime: e.target.value })}
+                            className="h-9 rounded-lg bg-neutral-100 px-2 text-sm focus:bg-white focus:border focus:border-sky-400 outline-none"
+                          />
+                        </div>
+                        <select
+                          value={day.slotDurationMinutes}
+                          onChange={(e) => updateDay(index, { slotDurationMinutes: Number(e.target.value) })}
+                          className="h-8 rounded-lg bg-neutral-100 px-2 text-xs focus:bg-white focus:border focus:border-sky-400 outline-none w-28"
+                        >
+                          {SLOT_DURATIONS.map((d) => (
+                            <option key={d} value={d}>{d} min slots</option>
+                          ))}
+                        </select>
                       </div>
                     ) : (
                       <span className="text-xs text-neutral-400">Unavailable</span>
@@ -378,6 +406,15 @@ export function DoctorAvailabilityPage() {
                 />
               </div>
             </div>
+            <label className="flex items-center gap-2 cursor-pointer w-fit">
+              <input
+                type="checkbox"
+                checked={newRecurrence === 'weekly'}
+                onChange={(e) => setNewRecurrence(e.target.checked ? 'weekly' : 'none')}
+                className="w-4 h-4 rounded accent-sky-400"
+              />
+              <span className="text-sm text-neutral-700">Repeat weekly</span>
+            </label>
             <div className="flex justify-end">
               <Button
                 onClick={handleAddSlot}
@@ -422,6 +459,11 @@ export function DoctorAvailabilityPage() {
                       {slot.startTime} – {slot.endTime}
                     </p>
                   </div>
+                  {slot.recurrenceType === 'weekly' && (
+                    <span className="shrink-0 text-xs font-medium bg-sky-100 text-sky-700 rounded-full px-2 py-0.5">
+                      Weekly
+                    </span>
+                  )}
                   {slot.reason && (
                     <span className="text-xs text-neutral-400 truncate">{slot.reason}</span>
                   )}
