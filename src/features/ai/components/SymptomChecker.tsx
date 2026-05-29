@@ -2,24 +2,44 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { DoctorCard } from '@/features/doctors/components/DoctorCard';
-import { useAIRecommendation, useAiHistory } from '../hooks/useAIRecommendation';
+import { useAiHistory } from '../hooks/useAIRecommendation';
+import { streamRecommendations } from '../api/ai.api';
 import { Button } from '@/shared/ui/button';
 import { formatDate } from '@/shared/lib/date';
+import type { RecommendationResult } from '../types';
 
 export function SymptomChecker() {
   const navigate = useNavigate();
   const [symptoms, setSymptoms] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingText, setStreamingText] = useState('');
+  const [streamResult, setStreamResult] = useState<RecommendationResult | null>(null);
+  const [streamError, setStreamError] = useState(false);
 
-  const { mutate, data, isPending, isError, reset } = useAIRecommendation();
   const { data: history } = useAiHistory();
 
-  function handleSubmit() {
-    if (symptoms.trim().length < 10) return;
-    mutate(symptoms, {
-      onSuccess: () => setSubmitted(true),
-    });
+  function resetStream() {
+    setStreamingText('');
+    setStreamResult(null);
+    setStreamError(false);
+  }
+
+  async function handleSubmit() {
+    if (symptoms.trim().length < 10 || isStreaming) return;
+    resetStream();
+    setIsStreaming(true);
+    try {
+      await streamRecommendations(
+        symptoms,
+        (token) => setStreamingText((prev) => prev + token),
+        (recommendations) => setStreamResult(recommendations),
+      );
+    } catch {
+      setStreamError(true);
+    } finally {
+      setIsStreaming(false);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -41,10 +61,7 @@ export function SymptomChecker() {
           value={symptoms}
           onChange={(e) => {
             setSymptoms(e.target.value);
-            if (submitted) {
-              setSubmitted(false);
-              reset();
-            }
+            if (streamResult || streamingText) resetStream();
           }}
           onKeyDown={handleKeyDown}
           placeholder="e.g., I've been having chest pain and shortness of breath for the past week…"
@@ -55,18 +72,30 @@ export function SymptomChecker() {
       {/* Submit button */}
       <Button
         onClick={handleSubmit}
-        disabled={isPending || symptoms.trim().length < 10}
+        disabled={isStreaming || symptoms.trim().length < 10}
         className="flex items-center gap-2 disabled:cursor-not-allowed"
       >
-        {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+        {isStreaming && <Loader2 className="h-4 w-4 animate-spin" />}
         Find Matching Doctors
       </Button>
 
       {/* Error state */}
-      {isError && (
+      {streamError && (
         <p className="text-sm text-red-500">
           Unable to process your symptoms. Please try again.
         </p>
+      )}
+
+      {/* Streaming text — visible while tokens arrive */}
+      {(isStreaming || (streamingText && !streamResult)) && (
+        <div className="border border-neutral-200 rounded-lg p-3 bg-neutral-50">
+          <p className="text-sm text-neutral-700 whitespace-pre-wrap leading-relaxed">
+            {streamingText}
+            {isStreaming && (
+              <span className="inline-block w-1.5 h-4 bg-sky-400 ml-0.5 align-text-bottom animate-pulse" />
+            )}
+          </p>
+        </div>
       )}
 
       {/* Recent searches */}
@@ -94,8 +123,7 @@ export function SymptomChecker() {
                     type="button"
                     onClick={() => {
                       setSymptoms(entry.symptoms);
-                      setSubmitted(false);
-                      reset();
+                      resetStream();
                     }}
                     className="w-full text-left flex items-baseline gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50 transition"
                   >
@@ -113,10 +141,10 @@ export function SymptomChecker() {
         </div>
       )}
 
-      {/* Results */}
-      {submitted && data && data.recommendations.length > 0 && (
+      {/* Results — shown once streaming completes */}
+      {streamResult && streamResult.recommendations.length > 0 && (
         <div className="space-y-5 pt-2 border-t border-neutral-100">
-          {data.recommendations.map((rec) => (
+          {streamResult.recommendations.map((rec) => (
             <div key={rec.specialization} className="space-y-2">
               {/* Specialization badge */}
               <div className="flex items-center gap-2 flex-wrap">
