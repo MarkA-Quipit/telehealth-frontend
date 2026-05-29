@@ -5,6 +5,7 @@ export const QUERY_KEYS = {
   patients: {
     detail: (id: string) => ['patients', id] as const,
     history: (id: string) => ['patients', id, 'history'] as const,
+    documents: (id: string) => ['patients', id, 'documents'] as const,
   },
   doctors: {
     all: (filters?: object) => ['doctors', filters] as const,
@@ -18,6 +19,7 @@ export const QUERY_KEYS = {
     detail: (id: string) => ['appointments', id] as const,
     notes: (id: string) => ['appointments', id, 'notes'] as const,
     prescriptions: (id: string) => ['appointments', id, 'prescriptions'] as const,
+    chat: (id: string) => ['appointments', id, 'chat'] as const,
     patientSearch: (q: string, filters?: object) => ['appointments', 'patients', 'search', q, filters] as const,
   },
   notifications: {

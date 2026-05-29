@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useAppointment } from '@/features/appointments/hooks/useAppointments';
 import { formatDuration } from '@/shared/lib/utils';
+import { ChatPanel } from '../components/ChatPanel';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser } from '@/features/users/hooks/useUser';
 import { JitsiRoom } from '../components/JitsiRoom';
@@ -80,7 +81,7 @@ export function DoctorConsultationPage() {
 
         {/* Panel content */}
         {panelOpen && (
-          <div className="w-80 bg-white border-l border-neutral-200 p-4 overflow-y-auto space-y-4">
+          <div className="w-80 bg-white border-l border-neutral-200 p-4 flex flex-col gap-4 overflow-hidden">
             {/* Patient info */}
             <div>
               <p className="text-sm font-semibold text-neutral-900">
@@ -118,6 +119,15 @@ export function DoctorConsultationPage() {
             >
               Open Full Notes →
             </Link>
+
+            {/* Chat */}
+            <div className="flex-1 min-h-0 border-t border-neutral-100 pt-3 flex flex-col overflow-hidden">
+              <ChatPanel
+                appointmentId={appointmentId!}
+                currentUserId={authUser?.id ?? ''}
+                otherPartyName={`${appointment.patient.firstName} ${appointment.patient.lastName}`}
+              />
+            </div>
           </div>
         )}
       </div>
