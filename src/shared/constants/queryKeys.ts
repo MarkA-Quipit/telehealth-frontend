@@ -25,4 +25,7 @@ export const QUERY_KEYS = {
   notifications: {
     all: () => ['notifications'] as const,
   },
+  ai: {
+    history: () => ['ai', 'history'] as const,
+  },
 };

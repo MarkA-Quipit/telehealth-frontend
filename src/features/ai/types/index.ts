@@ -9,3 +9,11 @@ export interface AIRecommendation {
 export interface RecommendationResult {
   recommendations: AIRecommendation[];
 }
+
+export interface AiHistoryEntry {
+  id: string;
+  userId: string;
+  symptoms: string;
+  recommendations: AIRecommendation[];
+  createdAt: string;
+}

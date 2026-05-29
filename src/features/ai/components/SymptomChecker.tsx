@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { DoctorCard } from '@/features/doctors/components/DoctorCard';
-import { useAIRecommendation } from '../hooks/useAIRecommendation';
+import { useAIRecommendation, useAiHistory } from '../hooks/useAIRecommendation';
 import { Button } from '@/shared/ui/button';
+import { formatDate } from '@/shared/lib/date';
 
 export function SymptomChecker() {
   const navigate = useNavigate();
   const [symptoms, setSymptoms] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const { mutate, data, isPending, isError, reset } = useAIRecommendation();
+  const { data: history } = useAiHistory();
 
   function handleSubmit() {
     if (symptoms.trim().length < 10) return;
@@ -64,6 +67,50 @@ export function SymptomChecker() {
         <p className="text-sm text-red-500">
           Unable to process your symptoms. Please try again.
         </p>
+      )}
+
+      {/* Recent searches */}
+      {history && history.length > 0 && (
+        <div className="border-t border-neutral-100 pt-3">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen((o) => !o)}
+            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-700 transition"
+          >
+            <Clock className="w-3.5 h-3.5" />
+            Recent searches
+            {historyOpen ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
+
+          {historyOpen && (
+            <ul className="mt-2 space-y-1">
+              {history.map((entry) => (
+                <li key={entry.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSymptoms(entry.symptoms);
+                      setSubmitted(false);
+                      reset();
+                    }}
+                    className="w-full text-left flex items-baseline gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50 transition"
+                  >
+                    <span className="flex-1 text-sm text-neutral-700 line-clamp-1">
+                      {entry.symptoms}
+                    </span>
+                    <span className="shrink-0 text-xs text-neutral-400">
+                      {formatDate(entry.createdAt)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       {/* Results */}
