@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser, useUpdateUser, useChangePassword } from '../hooks/useUser';
@@ -19,6 +19,7 @@ interface FormValues {
   yearsOfExperience: string;
   consultationFee: string;
   licenseNumber: string;
+  isAcceptingPatients: boolean;
 }
 
 function LogoutAllSection() {
@@ -137,12 +138,10 @@ export function DoctorProfilePage() {
   const { mutateAsync: updateUser, isPending: updatingUser } = useUpdateUser();
   const { mutateAsync: updateDoctor, isPending: updatingDoctor } = useUpdateDoctor();
 
-  const [isAccepting, setIsAccepting] = useState(true);
-
   const isLoading = userLoading || doctorLoading;
   const isSaving = updatingUser || updatingDoctor;
 
-  const { register, handleSubmit, reset } = useForm<FormValues>({
+  const { register, handleSubmit, reset, setValue, control } = useForm<FormValues>({
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -152,8 +151,11 @@ export function DoctorProfilePage() {
       yearsOfExperience: '',
       consultationFee: '',
       licenseNumber: '',
+      isAcceptingPatients: true,
     },
   });
+
+  const isAccepting = useWatch({ control, name: 'isAcceptingPatients' });
 
   useEffect(() => {
     if (fullUser && doctor) {
@@ -166,8 +168,8 @@ export function DoctorProfilePage() {
         yearsOfExperience: doctor.yearsOfExperience != null ? String(doctor.yearsOfExperience) : '',
         consultationFee: doctor.consultationFee != null ? String(doctor.consultationFee) : '',
         licenseNumber: doctor.licenseNumber ?? '',
+        isAcceptingPatients: doctor.isAcceptingPatients,
       });
-      setIsAccepting(doctor.isAcceptingPatients);
     }
   }, [fullUser, doctor, reset]);
 
@@ -186,7 +188,7 @@ export function DoctorProfilePage() {
         licenseNumber: values.licenseNumber || undefined,
         yearsOfExperience: values.yearsOfExperience ? parseInt(values.yearsOfExperience, 10) : undefined,
         consultationFee: values.consultationFee ? parseInt(values.consultationFee, 10) : undefined,
-        isAcceptingPatients: isAccepting,
+        isAcceptingPatients: values.isAcceptingPatients,
       };
 
       await Promise.all([
@@ -336,7 +338,7 @@ export function DoctorProfilePage() {
               type="button"
               role="switch"
               aria-checked={isAccepting}
-              onClick={() => setIsAccepting((v) => !v)}
+              onClick={() => setValue('isAcceptingPatients', !isAccepting)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-1 ${
                 isAccepting ? 'bg-sky-400' : 'bg-neutral-200'
               }`}

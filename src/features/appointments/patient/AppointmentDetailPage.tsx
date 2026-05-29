@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import * as Dialog from 'radix-ui/react-dialog';
+import { Dialog } from 'radix-ui';
 import { useAppointment, useCancelAppointment, useNotes, usePrescriptions, useRescheduleAppointment } from '../hooks/useAppointments';
 import { useDoctorReviews, useAvailableSlots } from '@/features/doctors/hooks/useDoctors';
 import { submitReview } from '@/features/doctors/api/doctors.api';

@@ -19,15 +19,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = React.useState<string | null>(() =>
     localStorage.getItem('token'),
   );
-  const [isLoading, setIsLoading] = React.useState(true);
+  // Start loading only when there is a stored token to validate
+  const [isLoading, setIsLoading] = React.useState(() => !!localStorage.getItem('token'));
   const navigate = useNavigate();
 
   // On mount: if a stored token exists, hydrate the user
   React.useEffect(() => {
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
+    if (!token) return;
     authApi
       .getMe()
       .then(setUser)
@@ -85,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuthContext(): AuthContextValue {
   const ctx = React.useContext(AuthContext);
   if (!ctx) throw new Error('useAuthContext must be used inside <AuthProvider>');

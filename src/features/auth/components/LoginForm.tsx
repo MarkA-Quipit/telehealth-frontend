@@ -62,7 +62,7 @@ export function LoginForm() {
         </p>
       )}
 
-      <Button type="submit" size="lg" disabled={isPending} className="w-full mt-1">
+      <Button type="submit" disabled={isPending} className="w-full mt-1">
         {isPending ? 'Signing in…' : 'Sign in'}
       </Button>
 

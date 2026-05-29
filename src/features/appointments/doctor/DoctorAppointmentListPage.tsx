@@ -8,7 +8,7 @@ import { AppointmentSkeletonTable } from '../components/AppointmentSkeletonTable
 import { Avatar } from '@/shared/components/Avatar';
 import { MedicalPill } from '../components/MedicalPill';
 import { EmptyState } from '@/shared/components/EmptyState';
-import type { AppointmentStatus, PatientSearchResult, PatientSearchFilters } from '../types';
+import type { AppointmentStatus, PatientSearchFilters } from '../types';
 
 const FILTER_TABS = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'] as const;
 type FilterTab = typeof FILTER_TABS[number];

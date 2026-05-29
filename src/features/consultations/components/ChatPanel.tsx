@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Pusher from 'pusher-js';
 import { useChatHistory, useSendChatMessage } from '../hooks/useConsultations';
 import type { ChatMessage } from '../api/consultations.api';
@@ -15,24 +15,25 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ appointmentId, currentUserId, otherPartyName }: ChatPanelProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Live messages received via Pusher since the page loaded
+  const [pusherMessages, setPusherMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { data: history } = useChatHistory(appointmentId);
+  const { data: history = [] } = useChatHistory(appointmentId);
   const { mutate: send, isPending } = useSendChatMessage(appointmentId);
 
-  // Seed with history on load
-  useEffect(() => {
-    if (history) setMessages(history);
-  }, [history]);
+  // Combine persisted history + live Pusher messages, deduped by id
+  const messages = useMemo(() => {
+    const seenIds = new Set(history.map((m) => m.id));
+    return [...history, ...pusherMessages.filter((m) => !seenIds.has(m.id))];
+  }, [history, pusherMessages]);
 
   // Pusher subscription
   useEffect(() => {
     const channel = pusherClient.subscribe(`consultation-${appointmentId}`);
     channel.bind('new_message', (data: ChatMessage) => {
-      setMessages((prev) => {
-        // Dedup by id in case sender receives own message twice
+      setPusherMessages((prev) => {
         if (prev.some((m) => m.id === data.id)) return prev;
         return [...prev, data];
       });
@@ -45,7 +46,7 @@ export function ChatPanel({ appointmentId, currentUserId, otherPartyName }: Chat
   // Auto-scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages.length]);
 
   function handleSend() {
     const trimmed = input.trim();

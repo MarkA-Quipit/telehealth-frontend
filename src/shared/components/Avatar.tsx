@@ -1,3 +1,4 @@
+// eslint-disable-next-line react-refresh/only-export-components
 export function getInitials(firstName?: string | null, lastName?: string | null): string {
   const f = firstName?.trim()[0]?.toUpperCase() ?? '';
   const l = lastName?.trim()[0]?.toUpperCase() ?? '';

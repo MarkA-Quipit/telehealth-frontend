@@ -257,7 +257,7 @@ export function RegisterForm() {
                 {/* Sticky footer */}
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="secondary">
                       Close
                     </Button>
                   </DialogClose>
@@ -293,7 +293,6 @@ export function RegisterForm() {
 
       <Button
         type="submit"
-        size="lg"
         disabled={isPending}
         className="w-full mt-1"
       >

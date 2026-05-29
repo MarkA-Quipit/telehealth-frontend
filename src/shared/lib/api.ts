@@ -39,7 +39,7 @@ api.interceptors.response.use(
           if (axErr.config!.headers) {
             axErr.config!.headers['Authorization'] = `Bearer ${newToken}`;
           }
-          return api(axErr.config as Parameters<typeof api>[0]);
+          return api(axErr.config as unknown as Parameters<typeof api>[0]);
         } catch {
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');

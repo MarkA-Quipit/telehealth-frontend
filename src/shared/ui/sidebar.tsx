@@ -23,6 +23,7 @@ interface SidebarContextValue {
 
 const SidebarContext = React.createContext<SidebarContextValue | null>(null)
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSidebar() {
   const ctx = React.useContext(SidebarContext)
   if (!ctx) throw new Error('useSidebar must be used within a SidebarProvider')
@@ -32,12 +33,11 @@ export function useSidebar() {
 // ─── useIsMobile ─────────────────────────────────────────────────────────────
 function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false,
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : false,
   )
   React.useEffect(() => {
     const mql = window.matchMedia('(max-width: 767px)')
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    setIsMobile(mql.matches)
     mql.addEventListener('change', handler)
     return () => mql.removeEventListener('change', handler)
   }, [])
@@ -410,5 +410,6 @@ export {
   SidebarProvider,
   SidebarSeparator,
   SidebarTrigger,
+  // eslint-disable-next-line react-refresh/only-export-components
   sidebarMenuButtonVariants,
 }

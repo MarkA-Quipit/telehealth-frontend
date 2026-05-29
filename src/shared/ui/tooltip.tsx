@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { Tooltip as TooltipPrimitive } from 'radix-ui';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const TooltipProvider = TooltipPrimitive.Provider;
+// eslint-disable-next-line react-refresh/only-export-components
 export const Tooltip = TooltipPrimitive.Root;
+// eslint-disable-next-line react-refresh/only-export-components
 export const TooltipTrigger = TooltipPrimitive.Trigger;
 
 export function TooltipContent({
