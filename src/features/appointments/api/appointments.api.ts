@@ -75,3 +75,11 @@ export async function addPrescription(
 export async function deletePrescription(appointmentId: string, prescriptionId: string): Promise<void> {
   await api.delete(`/api/appointments/${appointmentId}/prescriptions/${prescriptionId}`);
 }
+
+export async function rescheduleAppointment(
+  id: string,
+  dto: { newScheduledAt: string; durationMinutes?: number },
+): Promise<AppointmentWithDetails> {
+  const { data } = await api.patch(`/api/appointments/${id}/reschedule`, dto);
+  return data.data;
+}

@@ -5,6 +5,7 @@ import {
   createAppointment,
   updateStatus,
   cancelAppointment,
+  rescheduleAppointment,
   getNotes,
   saveNotes,
   getPrescriptions,
@@ -63,6 +64,23 @@ export function useCancelAppointment() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.appointments.detail(id) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.appointments.all() });
+    },
+  });
+}
+
+// ── Reschedule ────────────────────────────────────────────────────────────────
+export function useRescheduleAppointment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: { newScheduledAt: string; durationMinutes?: number } }) =>
+      rescheduleAppointment(id, dto),
+    onSuccess: (newAppt, { id }) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.appointments.detail(id) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.appointments.all() });
+      // Also prime the new appointment in cache
+      if (newAppt?.id) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.appointments.detail(newAppt.id) });
+      }
     },
   });
 }
