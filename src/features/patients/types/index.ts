@@ -12,6 +12,8 @@ export interface Patient {
   medicalHistory?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
+  insuranceProvider?: string;
+  insurancePolicyNumber?: string;
   profilePictureUrl?: string;
   phoneNumber?: string;
 }
@@ -40,6 +42,15 @@ export interface PatientMedicalHistory {
   consultationHistory: PatientHistoryEntry[];
 }
 
+export interface PatientDocument {
+  id: string;
+  patientId: string;
+  url: string;
+  fileName: string;
+  fileType: string;
+  uploadedAt: string;
+}
+
 export interface UpdatePatientDto {
   dateOfBirth?: string;
   weightKg?: number;
@@ -49,4 +60,6 @@ export interface UpdatePatientDto {
   medicalHistory?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
+  insuranceProvider?: string;
+  insurancePolicyNumber?: string;
 }

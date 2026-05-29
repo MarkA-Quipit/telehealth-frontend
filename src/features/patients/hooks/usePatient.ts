@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPatient, updatePatient, getPatientHistory } from '../api/patients.api';
+import { getPatient, updatePatient, getPatientHistory, getDocuments, uploadDocument } from '../api/patients.api';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { UpdatePatientDto } from '../types';
 
@@ -17,6 +17,24 @@ export function usePatientHistory(patientId?: string | null) {
     queryFn: () => getPatientHistory(patientId!),
     enabled: !!patientId,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useDocuments(patientId?: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.patients.documents(patientId ?? ''),
+    queryFn: () => getDocuments(patientId!),
+    enabled: !!patientId,
+  });
+}
+
+export function useUploadDocument(patientId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => uploadDocument(patientId, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.patients.documents(patientId) });
+    },
   });
 }
 
