@@ -1,6 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, CalendarDays, Stethoscope, Clock, User, Activity } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
+import { QUERY_KEYS } from '../../constants/queryKeys';
+import { listAppointments } from '../../../features/appointments/api/appointments.api';
+import { listDoctors } from '../../../features/doctors/api/doctors.api';
+import { getUser } from '../../../features/users/api/users.api';
 import {
   Sidebar as SidebarPrimitive,
   SidebarContent,
@@ -20,28 +25,21 @@ import {
   TooltipTrigger,
 } from '../../ui/tooltip';
 
-const patientNav = [
-  { to: '/patient/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
-  { to: '/patient/doctors',      label: 'Find Doctors', icon: Stethoscope     },
-  { to: '/patient/appointments', label: 'Appointments', icon: CalendarDays    },
-  { to: '/patient/profile',      label: 'Profile',      icon: User            },
-];
+interface NavItemDef {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  prefetch?: () => void;
+}
 
-const doctorNav = [
-  { to: '/doctor/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
-  { to: '/doctor/appointments', label: 'Appointments', icon: CalendarDays    },
-  { to: '/doctor/availability', label: 'Availability', icon: Clock           },
-  { to: '/doctor/profile',      label: 'Profile',      icon: User            },
-];
-
-function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }) {
+function NavItem({ to, label, icon: Icon, prefetch }: NavItemDef) {
   const location = useLocation();
   const { state } = useSidebar();
   const isActive = location.pathname.startsWith(to);
 
   const button = (
     <SidebarMenuButton asChild isActive={isActive}>
-      <NavLink to={to}>
+      <NavLink to={to} onMouseEnter={prefetch}>
         <Icon className="shrink-0" />
         <span>{label}</span>
       </NavLink>
@@ -66,18 +64,102 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: R
 
 export function AppSidebar() {
   const { user } = useAuth();
-  const nav = user?.roles.includes('doctor') ? doctorNav : patientNav;
-  const portalLabel = user?.roles.includes('doctor') ? 'Doctor Portal' : 'Patient Portal';
+  const queryClient = useQueryClient();
+  const userId = user?.id ?? '';
+  const isDoctor = user?.roles.includes('doctor') ?? false;
+
+  const nav: NavItemDef[] = isDoctor
+    ? [
+        {
+          to: '/doctor/dashboard',
+          label: 'Dashboard',
+          icon: LayoutDashboard,
+          prefetch: () => queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.appointments.all(),
+            queryFn: listAppointments,
+            staleTime: 30_000,
+          }),
+        },
+        {
+          to: '/doctor/appointments',
+          label: 'Appointments',
+          icon: CalendarDays,
+          prefetch: () => queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.appointments.all(),
+            queryFn: listAppointments,
+            staleTime: 30_000,
+          }),
+        },
+        {
+          to: '/doctor/availability',
+          label: 'Availability',
+          icon: Clock,
+        },
+        {
+          to: '/doctor/profile',
+          label: 'Profile',
+          icon: User,
+          prefetch: () => queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.users.detail(userId),
+            queryFn: () => getUser(userId),
+            staleTime: 30_000,
+          }),
+        },
+      ]
+    : [
+        {
+          to: '/patient/dashboard',
+          label: 'Dashboard',
+          icon: LayoutDashboard,
+          prefetch: () => queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.appointments.all(),
+            queryFn: listAppointments,
+            staleTime: 30_000,
+          }),
+        },
+        {
+          to: '/patient/doctors',
+          label: 'Find Doctors',
+          icon: Stethoscope,
+          prefetch: () => queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.doctors.all(),
+            queryFn: () => listDoctors({}),
+            staleTime: 30_000,
+          }),
+        },
+        {
+          to: '/patient/appointments',
+          label: 'Appointments',
+          icon: CalendarDays,
+          prefetch: () => queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.appointments.all(),
+            queryFn: listAppointments,
+            staleTime: 30_000,
+          }),
+        },
+        {
+          to: '/patient/profile',
+          label: 'Profile',
+          icon: User,
+          prefetch: () => queryClient.prefetchQuery({
+            queryKey: QUERY_KEYS.users.detail(userId),
+            queryFn: () => getUser(userId),
+            staleTime: 30_000,
+          }),
+        },
+      ];
+
+  const portalLabel = isDoctor ? 'Doctor Portal' : 'Patient Portal';
 
   return (
     <TooltipProvider delayDuration={200}>
       <SidebarPrimitive collapsible="icon">
         <SidebarHeader className="p-3">
-          <div className="flex h-12 items-center gap-3 group-data-[collapsible=icon]:justify-center">
+          <div className="flex h-12 items-center gap-3 transition-[gap] duration-200 group-data-[collapsible=icon]:gap-0">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500 text-white shadow-sm">
               <Activity className="size-5" />
             </div>
-            <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden overflow-hidden">
+            <div className="flex flex-col leading-tight overflow-hidden max-w-full transition-[max-width,opacity] duration-200 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0">
               <span className="text-sm font-semibold text-neutral-900 truncate">Telehealth</span>
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider truncate">
                 {portalLabel}

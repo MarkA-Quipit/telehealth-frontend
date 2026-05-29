@@ -234,34 +234,38 @@ Always show the disclaimer: "This is a discovery tool only and does not constitu
 ## Design System
 
 ### Mood
-Warm & Approachable — soft neutrals, open whitespace, friendly but professional.
-Never cold, never sterile. Healthcare that feels human.
+Friendly, Wellness-Focused, Patient-Centric — soft blue and mint, open whitespace, approachable and calm.
+Never cold, never clinical. Healthcare that feels human and restorative.
 
 ### Colors
-Primary:         #38bdf8  (sky-400)   — buttons, links, focus rings, active states
-Primary hover:   #0ea5e9  (sky-500)   — hover state for primary elements
-Primary light:   #e0f2fe  (sky-100)   — soft button fill, highlight backgrounds
-Primary text:    #0369a1  (sky-700)   — text on light primary backgrounds
+Primary:         #38bdf8  (sky-400)     — buttons, links, focus rings, active states
+Primary hover:   #0ea5e9  (sky-500)     — hover state for primary elements
+Primary light:   #e0f2fe  (sky-100)     — soft button fill, highlight backgrounds
+Primary text:    #0369a1  (sky-700)     — text on light primary backgrounds
+
+Accent:          #6ee7b7  (emerald-300) — secondary highlights, tags, wellness accents
+Accent light:    #d1fae5  (emerald-100) — soft accent backgrounds
+Accent text:     #065f46  (emerald-900) — text on light accent backgrounds
 
 Success:         #22c55e  (green-500)
 Warning:         #f59e0b  (amber-500)
 Danger:          #ef4444  (red-500)
 
-Page background: #f8fafc  (neutral-50) — never pure white for the page canvas
+Page background: #f0fdf4  (green-50)   — never pure white for the page canvas
 Card background: #ffffff  (white)
-Border default:  #e2e8f0  (neutral-200)
-Text primary:    #0f172a  (neutral-900)
-Text secondary:  #64748b  (neutral-500)
-Text muted:      #94a3b8  (neutral-400)
+Border default:  #e2e8f0  (slate-200)
+Text primary:    #1e293b  (slate-800)
+Text secondary:  #64748b  (slate-500)
+Text muted:      #94a3b8  (slate-400)
 
 ### Typography
 Font: Geist Variable (loaded via @fontsource-variable/geist)
 
-Page title (h1):      text-2xl font-semibold tracking-tight text-neutral-900
-Section heading (h2): text-xl font-semibold text-neutral-900
-Card heading (h3):    text-base font-semibold text-neutral-900
-Body:                 text-sm text-neutral-700
-Caption / label:      text-xs text-neutral-500
+Page title (h1):      text-2xl font-semibold tracking-tight text-slate-800
+Section heading (h2): text-xl font-semibold text-slate-800
+Card heading (h3):    text-base font-semibold text-slate-800
+Body:                 text-sm text-slate-700
+Caption / label:      text-xs text-slate-500
 
 Never font-bold for body. Use font-semibold for emphasis.
 
@@ -277,7 +281,7 @@ Page layout pattern:
     <div className="flex items-center justify-between">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Title</h1>
-        <p className="text-sm text-neutral-500">Description</p>
+        <p className="text-sm text-slate-500">Description</p>
       </div>
       <Button>Primary Action</Button>
     </div>
@@ -286,16 +290,16 @@ Page layout pattern:
 
 ### Sidebar
 Background:   white (#ffffff)
-Border:       border-r border-neutral-200
+Border:       border-r border-slate-200
 Width:        w-64 (fixed)
-Nav link:     text-sm text-neutral-600, rounded-lg px-3 py-2
+Nav link:     text-sm text-slate-600, rounded-lg px-3 py-2
 Active link:  bg-sky-50 text-sky-700 font-medium
-Hover link:   bg-neutral-100 text-neutral-900
-Logo area:    h-16 border-b border-neutral-200, flex items-center px-4
+Hover link:   bg-slate-100 text-slate-800
+Logo area:    h-16 border-b border-slate-200, flex items-center px-4
 
 ### Header
-Background:   #f8fafc (neutral-50)
-Border:       border-b border-neutral-200
+Background:   #f0fdf4 (green-50)
+Border:       border-b border-slate-200
 Height:       h-16
 Contents:     logo/title left, notification bell + user avatar right
 
@@ -314,21 +318,21 @@ Status card variant (appointments, records):
   cancelled → border-l-red-400
 
 Standard card (no status):
-  border border-neutral-200 rounded-xl shadow-sm
+  border border-slate-200 rounded-xl shadow-sm
 
 ### Form Inputs
 Style:        filled — bg-neutral-100, no border by default
 Focus:        bg-white border border-sky-400 ring-2 ring-sky-100
 Border radius: rounded-lg
 Height:       h-10 (standard), h-9 (compact)
-Label:        text-sm font-medium text-neutral-700, always visible above input
+Label:        text-sm font-medium text-slate-700, always visible above input
 Error text:   text-xs text-red-500 mt-1
 
 Use `<Input>` from `@/shared/ui/input` — never write the Tailwind class string by hand:
 
 ```tsx
 <div className="space-y-1.5">
-  <label className="text-sm font-medium text-neutral-700">Label</label>
+  <label className="text-sm font-medium text-slate-700">Label</label>
   <Input className="h-10" {...register('field')} />
   <p className="text-xs text-red-500">Error message</p>
 </div>
@@ -359,7 +363,7 @@ Use `<EmptyState>` from `@/shared/components/EmptyState` — never write the cen
 
 ```tsx
 <EmptyState
-  icon={<svg className="w-6 h-6 text-neutral-400" …>…</svg>}
+  icon={<svg className="w-6 h-6 text-slate-400" …>…</svg>}
   title="No appointments yet"
   description="Book your first consultation to get started."
   action={<Button onClick={…}>Book Now</Button>}
@@ -394,7 +398,7 @@ All interactive elements must have:
 - No gradients on cards or backgrounds
 - No shadows heavier than shadow-sm on cards (shadow-md only for modals/dropdowns)
 - No animation beyond simple transitions (duration-150 or duration-200)
-- No colored page backgrounds — neutral-50 only
+- No colored page backgrounds — green-50 only
 - No placeholder-only form fields
 - No generic "AI" aesthetics (glowing rings, neon accents)
 - No stacked modals

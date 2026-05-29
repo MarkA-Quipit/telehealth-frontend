@@ -328,13 +328,15 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
 const sidebarMenuButtonVariants = cva(
   [
     'peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl px-3 text-left text-sm outline-none',
-    'ring-sidebar-ring transition-[width,height,padding,background,color] duration-200 ease-in-out',
+    'ring-sidebar-ring transition-[width,height,padding,gap,background,color,box-shadow] duration-200 ease-in-out',
     'hover:bg-neutral-100 hover:text-neutral-900',
     'focus-visible:ring-2 active:scale-[0.98] active:bg-neutral-100',
     'disabled:pointer-events-none disabled:opacity-50',
-    'data-[active=true]:bg-sky-50 data-[active=true]:font-semibold data-[active=true]:text-sky-700',
-    'group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto',
-    '[&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0',
+    'shadow-[inset_3px_0_0_transparent]',
+    'data-[active=true]:bg-sky-50 data-[active=true]:font-semibold data-[active=true]:text-sky-700 data-[active=true]:shadow-[inset_3px_0_0_#38bdf8]',
+    'group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0',
+    '[&>span:last-child]:truncate [&>span:last-child]:transition-[max-width,opacity] [&>span:last-child]:duration-200 [&>span:last-child]:max-w-full [&>svg]:size-5 [&>svg]:shrink-0',
+    'group-data-[collapsible=icon]:[&>span:last-child]:max-w-0 group-data-[collapsible=icon]:[&>span:last-child]:opacity-0',
   ],
   {
     variants: {

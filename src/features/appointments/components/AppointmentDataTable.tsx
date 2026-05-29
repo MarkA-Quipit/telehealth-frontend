@@ -93,7 +93,7 @@ export function AppointmentDataTable({ appointments, role, detailBasePath }: App
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100">
-            {sorted.map((appt) => {
+            {sorted.map((appt, index) => {
               const nameCell =
                 role === 'patient' ? (
                   <div>
@@ -109,7 +109,7 @@ export function AppointmentDataTable({ appointments, role, detailBasePath }: App
                 );
 
               return (
-                <tr key={appt.id} className="hover:bg-neutral-50 transition-colors">
+                <tr key={appt.id} className="hover:bg-neutral-50 transition-colors animate-row-in" style={{ animationDelay: `${index * 35}ms` }}>
                   <td className="px-4 py-3">{nameCell}</td>
                   <td className="px-4 py-3 text-neutral-700 whitespace-nowrap">
                     {formatDate(appt.scheduledAt)}
