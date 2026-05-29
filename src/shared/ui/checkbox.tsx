@@ -25,4 +25,23 @@ function Checkbox({
   );
 }
 
-export { Checkbox };
+interface CheckboxFieldProps extends React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> {
+  label: React.ReactNode;
+  id: string;
+}
+
+function CheckboxField({ label, id, className, ...props }: CheckboxFieldProps) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <Checkbox id={id} className={className} {...props} />
+      <label
+        htmlFor={id}
+        className="text-sm text-neutral-700 leading-snug cursor-pointer select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-50"
+      >
+        {label}
+      </label>
+    </div>
+  );
+}
+
+export { Checkbox, CheckboxField };

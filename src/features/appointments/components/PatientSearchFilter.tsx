@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { Input } from '@/shared/ui/input';
+import { Select } from '@/shared/ui/select';
 import type { PatientSearchFilters } from '../types';
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'unknown'] as const;
@@ -53,7 +54,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
       {/* Blood type */}
       <div className="space-y-1 min-w-[120px]">
         <label className="text-xs font-medium text-neutral-500">Blood Type</label>
-        <select
+        <Select
           value={filters.bloodType ?? ''}
           onChange={(e) =>
             onChange({
@@ -62,7 +63,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
               page: 1,
             })
           }
-          className="w-full h-9 rounded-lg bg-neutral-100 px-2.5 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9 px-2.5"
         >
           <option value="">Any</option>
           {BLOOD_TYPES.map((bt) => (
@@ -70,13 +71,13 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
               {bt === 'unknown' ? 'Unknown' : bt}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Sex */}
       <div className="space-y-1 min-w-[150px]">
         <label className="text-xs font-medium text-neutral-500">Sex</label>
-        <select
+        <Select
           value={filters.sex ?? ''}
           onChange={(e) =>
             onChange({
@@ -85,7 +86,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
               page: 1,
             })
           }
-          className="w-full h-9 rounded-lg bg-neutral-100 px-2.5 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9 px-2.5"
         >
           <option value="">Any</option>
           {SEX_OPTIONS.map((o) => (
@@ -93,7 +94,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
               {o.label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Min consultations */}
