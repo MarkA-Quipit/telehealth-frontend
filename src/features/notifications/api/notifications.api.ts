@@ -1,11 +1,18 @@
 import api from '@/shared/lib/api';
 import type { Notification } from '../types';
 
-export async function getNotifications(): Promise<{
-  notifications: Notification[];
+export interface NotificationsPage {
+  items: Notification[];
+  total: number;
   unreadCount: number;
-}> {
-  const { data } = await api.get('/api/notifications');
+  page: number;
+  limit: number;
+}
+
+export async function getNotifications(type?: string, page = 1, limit = 20): Promise<NotificationsPage> {
+  const params: Record<string, string | number> = { page, limit };
+  if (type) params.type = type;
+  const { data } = await api.get('/api/notifications', { params });
   return data.data;
 }
 

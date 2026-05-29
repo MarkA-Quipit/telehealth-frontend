@@ -23,14 +23,14 @@ const NOTIFICATION_EVENTS: NotificationType[] = [
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
-export function useNotifications() {
+export function useNotifications(type?: string, page = 1) {
   const { user } = useAuthContext();
   const queryClient = useQueryClient();
 
   // ── Fetch persisted list ─────────────────────────────────────────────────
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.notifications.all(),
-    queryFn: notificationsApi.getNotifications,
+    queryKey: [...QUERY_KEYS.notifications.all(), type ?? 'all', page],
+    queryFn: () => notificationsApi.getNotifications(type, page),
     enabled: !!user,
   });
 
@@ -42,7 +42,8 @@ export function useNotifications() {
 
     for (const event of NOTIFICATION_EVENTS) {
       channel.bind(event, () => {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all() });
+        // Invalidate all notification queries (all type variants)
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all(), exact: false });
       });
     }
 
@@ -55,25 +56,27 @@ export function useNotifications() {
   const markReadMutation = useMutation({
     mutationFn: (id: string) => notificationsApi.markRead(id),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all() }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all(), exact: false }),
   });
 
   // ── markAllRead mutation ─────────────────────────────────────────────────
   const markAllReadMutation = useMutation({
     mutationFn: notificationsApi.markAllRead,
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all() }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all(), exact: false }),
   });
 
   // ── deleteNotification mutation ──────────────────────────────────────────
   const deleteNotificationMutation = useMutation({
     mutationFn: (id: string) => notificationsApi.deleteNotification(id),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all() }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all(), exact: false }),
   });
 
   return {
-    notifications: data?.notifications ?? [],
+    data,
+    items: data?.items ?? [],
+    total: data?.total ?? 0,
     unreadCount: data?.unreadCount ?? 0,
     isLoading,
     markRead: (id: string) => markReadMutation.mutate(id),

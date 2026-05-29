@@ -56,10 +56,23 @@ function SkeletonRow() {
 }
 
 // ---------------------------------------------------------------------------
+// Filter config
+// ---------------------------------------------------------------------------
+const FILTERS: { label: string; value: string | undefined }[] = [
+  { label: 'All', value: undefined },
+  { label: 'Bookings', value: 'appointment_booked' },
+  { label: 'Confirmed', value: 'appointment_confirmed' },
+  { label: 'Cancellations', value: 'appointment_cancelled' },
+  { label: 'Completed', value: 'appointment_completed' },
+];
+
+// ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 interface NotificationListProps {
-  notifications: Notification[];
+  allItems: Notification[];
+  hasMore: boolean;
+  loadMore: () => void;
   unreadCount: number;
   isLoading: boolean;
   markRead: (id: string) => void;
@@ -67,13 +80,17 @@ interface NotificationListProps {
   deleteNotification: (id: string) => void;
   deletingId?: string;
   onClose?: () => void;
+  activeType?: string;
+  setActiveType: (type: string | undefined) => void;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 export function NotificationList({
-  notifications,
+  allItems,
+  hasMore,
+  loadMore,
   unreadCount,
   isLoading,
   markRead,
@@ -81,6 +98,8 @@ export function NotificationList({
   deleteNotification,
   deletingId,
   onClose,
+  activeType,
+  setActiveType,
 }: NotificationListProps) {
   const navigate = useNavigate();
   const { user } = useAuthContext();
@@ -113,67 +132,99 @@ export function NotificationList({
         )}
       </div>
 
+      {/* Filter tabs */}
+      <div className="flex gap-1 px-2 py-1.5 border-b border-neutral-100 overflow-x-auto">
+        {FILTERS.map((f) => (
+          <button
+            key={f.label}
+            onClick={() => setActiveType(f.value)}
+            className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium transition ${
+              activeType === f.value
+                ? 'bg-sky-100 text-sky-700'
+                : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {/* List */}
       <div className="max-h-[360px] overflow-y-auto">
-        {isLoading ? (
+        {isLoading && allItems.length === 0 ? (
           <>
             <SkeletonRow />
             <SkeletonRow />
             <SkeletonRow />
           </>
-        ) : notifications.length === 0 ? (
+        ) : allItems.length === 0 ? (
           <EmptyState
             padding="md"
             icon={<Bell className="w-6 h-6 text-neutral-400" />}
             description="No notifications yet"
           />
         ) : (
-          notifications.map((n) => {
-            const Icon = TYPE_ICON[n.type] ?? Bell;
-            const iconColor = TYPE_ICON_COLOR[n.type] ?? 'text-neutral-400';
-            const hasAppointment = !!(n.data?.appointmentId);
+          <>
+            {allItems.map((n) => {
+              const Icon = TYPE_ICON[n.type] ?? Bell;
+              const iconColor = TYPE_ICON_COLOR[n.type] ?? 'text-neutral-400';
+              const hasAppointment = !!(n.data?.appointmentId);
 
-            return (
-              <button
-                key={n.id}
-                onClick={() => handleRowClick(n)}
-                className={`w-full text-left flex items-start gap-3 px-3 py-3 hover:bg-neutral-50 transition border-b border-neutral-50 last:border-0 ${
-                  !n.isRead ? 'border-l-2 border-l-sky-400' : ''
-                } ${hasAppointment ? 'cursor-pointer' : 'cursor-default'}`}
-              >
-                {/* Icon */}
-                <div className={`mt-0.5 shrink-0 ${iconColor}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm leading-snug ${
-                      !n.isRead ? 'font-medium text-neutral-900' : 'text-neutral-500'
-                    }`}
-                  >
-                    {n.title}
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{n.message}</p>
-                  <p className="text-xs text-neutral-400 mt-1">{relativeTime(n.createdAt)}</p>
-                </div>
-
-                {/* Delete button */}
+              return (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteNotification(n.id);
-                  }}
-                  disabled={deletingId === n.id}
-                  className="shrink-0 p-1 rounded text-neutral-300 hover:text-red-400 hover:bg-red-50 transition disabled:opacity-50"
-                  aria-label="Delete notification"
+                  key={n.id}
+                  onClick={() => handleRowClick(n)}
+                  className={`w-full text-left flex items-start gap-3 px-3 py-3 hover:bg-neutral-50 transition border-b border-neutral-50 last:border-0 ${
+                    !n.isRead ? 'border-l-2 border-l-sky-400' : ''
+                  } ${hasAppointment ? 'cursor-pointer' : 'cursor-default'}`}
                 >
-                  <X className="w-3.5 h-3.5" />
+                  {/* Icon */}
+                  <div className={`mt-0.5 shrink-0 ${iconColor}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm leading-snug ${
+                        !n.isRead ? 'font-medium text-neutral-900' : 'text-neutral-500'
+                      }`}
+                    >
+                      {n.title}
+                    </p>
+                    <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{n.message}</p>
+                    <p className="text-xs text-neutral-400 mt-1">{relativeTime(n.createdAt)}</p>
+                  </div>
+
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteNotification(n.id);
+                    }}
+                    disabled={deletingId === n.id}
+                    className="shrink-0 p-1 rounded text-neutral-300 hover:text-red-400 hover:bg-red-50 transition disabled:opacity-50"
+                    aria-label="Delete notification"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </button>
-              </button>
-            );
-          })
+              );
+            })}
+
+            {/* Load more */}
+            {hasMore && (
+              <div className="px-3 py-2 border-t border-neutral-100">
+                <button
+                  onClick={loadMore}
+                  disabled={isLoading}
+                  className="w-full text-xs text-sky-600 hover:text-sky-800 font-medium py-1 transition disabled:opacity-50"
+                >
+                  {isLoading ? 'Loading…' : 'Load more'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
