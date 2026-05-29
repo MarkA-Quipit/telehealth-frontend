@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formatDate, formatTime } from '@/shared/lib/date';
 import { AppointmentStatusBadge } from './AppointmentStatusBadge';
 import type { AppointmentWithDetails, AppointmentStatus } from '../types';
 
@@ -23,20 +24,6 @@ function SortIcon({ dir }: { dir: SortDir | null }) {
   return <span className="text-sky-500 ml-1">{dir === 'asc' ? '↑' : '↓'}</span>;
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 function getSortValue(appt: AppointmentWithDetails, key: SortKey, role: 'patient' | 'doctor'): string | number {
   switch (key) {

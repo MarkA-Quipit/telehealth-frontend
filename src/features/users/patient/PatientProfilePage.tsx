@@ -6,6 +6,8 @@ import { useUser, useUpdateUser } from '../hooks/useUser';
 import { usePatient, useUpdatePatient } from '@/features/patients/hooks/usePatient';
 import { ProfileCard } from '../components/ProfileCard';
 import { AvatarUpload } from '../components/AvatarUpload';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const;
 
@@ -153,17 +155,17 @@ export function PatientProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">First Name</label>
-              <input
+              <Input
                 {...register('firstName')}
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="Enter first name"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Last Name</label>
-              <input
+              <Input
                 {...register('lastName')}
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="Enter last name"
               />
             </div>
@@ -171,10 +173,10 @@ export function PatientProfilePage() {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-neutral-700">Phone Number</label>
-            <input
+            <Input
               {...register('phone')}
               type="tel"
-              className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              className="h-10"
               placeholder="Enter phone number"
             />
           </div>
@@ -187,17 +189,17 @@ export function PatientProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Date of Birth</label>
-              <input
+              <Input
                 {...register('dateOfBirth')}
                 type="date"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Blood Type</label>
               <select
                 {...register('bloodType')}
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
               >
                 <option value="">Select blood type</option>
                 {BLOOD_TYPES.map((bt) => (
@@ -210,23 +212,23 @@ export function PatientProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Weight (kg)</label>
-              <input
+              <Input
                 {...register('weightKg')}
                 type="number"
                 step="0.1"
                 min="0"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="e.g. 65"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Height (cm)</label>
-              <input
+              <Input
                 {...register('heightCm')}
                 type="number"
                 step="0.1"
                 min="0"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="e.g. 170"
               />
             </div>
@@ -260,18 +262,18 @@ export function PatientProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Contact Name</label>
-              <input
+              <Input
                 {...register('emergencyContactName')}
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="Full name"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Contact Phone</label>
-              <input
+              <Input
                 {...register('emergencyContactPhone')}
                 type="tel"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="Phone number"
               />
             </div>
@@ -279,10 +281,10 @@ export function PatientProfilePage() {
         </div>
 
         {/* Save Button */}
-        <button
+        <Button
           type="submit"
           disabled={isSaving}
-          className="w-full flex items-center justify-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2.5 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-2.5 disabled:cursor-not-allowed"
         >
           {isSaving && (
             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -291,7 +293,7 @@ export function PatientProfilePage() {
             </svg>
           )}
           {isSaving ? 'Saving…' : 'Save Changes'}
-        </button>
+        </Button>
       </form>
     </div>
   );

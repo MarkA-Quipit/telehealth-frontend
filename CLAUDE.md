@@ -82,6 +82,119 @@ Nothing else.
 - Strict TypeScript — no `any`
 - Ask ONE clarifying question if requirements are unclear
 
+### Anti-Redundancy (enforce before writing any UI)
+
+- **Never** define `getInitials` locally — import `Avatar` from `@/shared/components/Avatar`
+- **Never** define `formatDate` / `formatTime` / any `toLocaleDateString` call locally — import from `@/shared/lib/date`
+- **Never** write inline button Tailwind strings (`bg-sky-100 text-sky-700 …`) — use `<Button>` from `@/shared/ui/button`
+- **Never** write inline input Tailwind strings (`bg-neutral-100 … focus:border-sky-400 …`) — use `<Input>` from `@/shared/ui/input`
+- **Never** write an inline empty-state block (`flex flex-col items-center justify-center …`) — use `<EmptyState>` from `@/shared/components/EmptyState`
+- **Never** copy-paste a `SkeletonCard` or `SkeletonRow` function into a page — use `AppointmentSkeletonCard` or `AppointmentSkeletonTable`
+- **Never** write a tab bar loop inline — use `<FilterTabs>` from `@/features/appointments/components/FilterTabs`
+- Before creating any new shared component, check `src/shared/` and the appointments `components/` folder first
+
+---
+
+## Shared Components
+
+These exist. Use them. Do not recreate them.
+
+### Utilities — `src/shared/lib/`
+
+**`date.ts`** — all date/time formatting
+
+```ts
+import { formatDate, formatDateLong, formatDateWithWeekday, formatTime, formatDateUTC } from '@/shared/lib/date'
+
+formatDate(iso)              // "Jan 15, 2025"
+formatDateLong(iso)          // "Monday, January 15, 2025"
+formatDateWithWeekday(iso)   // "Mon, Jan 15, 2025"
+formatTime(iso)              // "09:30 AM"
+formatDateUTC(dateStr)       // "June 3, 2026" — UTC-safe for YYYY-MM-DD strings
+```
+
+### UI Primitives — `src/shared/ui/`
+
+**`button.tsx`** — `import { Button } from '@/shared/ui/button'`
+
+| Variant | When to use |
+|---|---|
+| `primary` (default) | Main CTA, form submit |
+| `secondary` | Cancel, back, outline actions |
+| `destructive` | Delete, cancel appointment |
+| `ghost` | Low-emphasis text actions |
+
+Sizes: `default` (`px-4 py-2`), `sm` (`px-3 py-1.5`), `icon` (`p-2`). Pass `className` to override padding only.
+
+**`input.tsx`** — `import { Input } from '@/shared/ui/input'`
+
+Applies the filled `bg-neutral-100` style automatically. Pass height via `className`:
+
+```tsx
+<Input className="h-10" {...register('field')} />  // standard
+<Input className="h-9" value={q} onChange={…} />   // compact
+```
+
+`<select>` and `<textarea>` are native elements — no shared wrapper exists yet.
+
+### Layout Components — `src/shared/components/`
+
+**`Avatar.tsx`** — `import { Avatar, getInitials } from '@/shared/components/Avatar'`
+
+```tsx
+<Avatar firstName="Jane" lastName="Doe" profilePictureUrl={url} size="md" />
+// size: xs (w-8) | sm (w-10) | md (w-12) | lg (w-16) | xl (w-20)
+```
+
+**`EmptyState.tsx`** — `import { EmptyState } from '@/shared/components/EmptyState'`
+
+```tsx
+<EmptyState
+  icon={<svg …>…</svg>}   // pass already-sized icon (w-6 h-6 text-neutral-400)
+  title="No results"
+  description="Try adjusting your filters."
+  action={<Button onClick={…}>Clear</Button>}
+  padding="lg"            // sm=py-8 | md=py-10 | lg=py-16 (default)
+/>
+```
+
+### Feature-Scoped — `src/features/appointments/components/`
+
+**`FilterTabs.tsx`** — generic tab bar, works for any `readonly string[]`
+
+```tsx
+import { FilterTabs } from '../components/FilterTabs'
+<FilterTabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+```
+
+**`AppointmentSkeletonTable.tsx`** — skeleton for appointment tables
+
+```tsx
+import { AppointmentSkeletonTable } from '../components/AppointmentSkeletonTable'
+<AppointmentSkeletonTable headers={['Patient', 'Date', 'Time', 'Status', '']} />
+```
+
+**`AppointmentSkeletonCard.tsx`** — skeleton for status-card lists (dashboards)
+
+```tsx
+import { AppointmentSkeletonCard } from '../components/AppointmentSkeletonCard'
+<AppointmentSkeletonCard />
+```
+
+**`QuickActions.tsx`** — card grid of navigation shortcuts
+
+```tsx
+import { QuickActions } from '../components/QuickActions'
+<QuickActions columns={3} actions={[{ label, description, path, icon, iconBg, iconColor }]} />
+```
+
+**`MedicalPill.tsx`** — labeled medical info badge
+
+```tsx
+import { MedicalPill } from '../components/MedicalPill'
+<MedicalPill label="Blood type" value="O+" />
+```
+
 ---
 
 ## Module-Specific Critical Notes
@@ -211,31 +324,29 @@ Height:       h-10 (standard), h-9 (compact)
 Label:        text-sm font-medium text-neutral-700, always visible above input
 Error text:   text-xs text-red-500 mt-1
 
-Input pattern:
-  <div className="space-y-1.5">
-    <label className="text-sm font-medium text-neutral-700">Label</label>
-    <input className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm
-                      focus:bg-white focus:border focus:border-sky-400
-                      focus:ring-2 focus:ring-sky-100 outline-none transition" />
-    <p className="text-xs text-red-500">Error message</p>
-  </div>
+Use `<Input>` from `@/shared/ui/input` — never write the Tailwind class string by hand:
+
+```tsx
+<div className="space-y-1.5">
+  <label className="text-sm font-medium text-neutral-700">Label</label>
+  <Input className="h-10" {...register('field')} />
+  <p className="text-xs text-red-500">Error message</p>
+</div>
+```
 
 ### Buttons
-Primary:
-  bg-sky-100 text-sky-700 font-medium rounded-lg px-4 py-2 text-sm
-  hover:bg-sky-200 transition
-  loading: show spinner inline, disable button
+Use `<Button>` from `@/shared/ui/button` — never write the Tailwind class string by hand:
 
-Secondary / outline:
-  border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm
-  hover:bg-neutral-50 transition
+```tsx
+<Button>Primary</Button>                         {/* sky-100 fill, default */}
+<Button variant="secondary">Cancel</Button>      {/* neutral outline */}
+<Button variant="destructive">Delete</Button>    {/* red-50 fill */}
+<Button variant="ghost">Link-style</Button>      {/* no background */}
+<Button size="sm">Compact</Button>               {/* px-3 py-1.5 */}
+<Button disabled>Loading…</Button>               {/* opacity-50, no-pointer */}
+```
 
-Destructive:
-  bg-red-50 text-red-600 font-medium rounded-lg px-4 py-2 text-sm
-  hover:bg-red-100 transition
-
-Disabled state (all):
-  opacity-50 cursor-not-allowed
+Loading pattern: show inline spinner + `disabled` prop — do not hide the button.
 
 ### Status Badges
 pending:   bg-amber-100 text-amber-700  rounded-full px-2.5 py-0.5 text-xs font-medium
@@ -244,15 +355,17 @@ completed: bg-green-100 text-green-700  rounded-full px-2.5 py-0.5 text-xs font-
 cancelled: bg-red-100   text-red-700    rounded-full px-2.5 py-0.5 text-xs font-medium
 
 ### Empty States
-Pattern: centered, icon + message + CTA button
-  <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
-      <Icon className="w-6 h-6 text-neutral-400" />
-    </div>
-    <h3 className="text-sm font-semibold text-neutral-900 mb-1">No appointments yet</h3>
-    <p className="text-sm text-neutral-500 mb-4">Book your first consultation to get started.</p>
-    <Button>Book Now</Button>
-  </div>
+Use `<EmptyState>` from `@/shared/components/EmptyState` — never write the centered div block by hand:
+
+```tsx
+<EmptyState
+  icon={<svg className="w-6 h-6 text-neutral-400" …>…</svg>}
+  title="No appointments yet"
+  description="Book your first consultation to get started."
+  action={<Button onClick={…}>Book Now</Button>}
+  padding="lg"   // sm=py-8 | md=py-10 | lg=py-16 (default)
+/>
+```
 
 ### Loading States
 Content areas: Skeleton components (never spinners)
@@ -261,9 +374,14 @@ Content areas: Skeleton components (never spinners)
 Buttons only: inline spinner + disabled
 
 ### Avatars
-With photo:    rounded-full, object-cover
-Without photo: rounded-full bg-sky-100 text-sky-700 font-semibold
-               initials: first letter of first + last name
+Use `<Avatar>` from `@/shared/components/Avatar` — never write the photo/initials conditional by hand:
+
+```tsx
+<Avatar firstName="Jane" lastName="Doe" profilePictureUrl={url} size="md" />
+// size: xs=w-8 | sm=w-10 | md=w-12 | lg=w-16 | xl=w-20
+```
+
+If you only need the initials string: `import { getInitials } from '@/shared/components/Avatar'`
 
 ### Interaction States
 All interactive elements must have:

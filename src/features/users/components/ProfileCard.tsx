@@ -1,34 +1,22 @@
+import { Avatar } from '@/shared/components/Avatar';
 import type { User } from '../types';
 
 interface ProfileCardProps {
   user: User;
 }
 
-function getInitials(firstName?: string | null, lastName?: string | null): string {
-  const f = firstName?.trim()[0]?.toUpperCase() ?? '';
-  const l = lastName?.trim()[0]?.toUpperCase() ?? '';
-  return f + l || '?';
-}
-
 export function ProfileCard({ user }: ProfileCardProps) {
-  const initials = getInitials(user.firstName, user.lastName);
   const fullName =
     [user.firstName, user.lastName].filter(Boolean).join(' ') || 'No name set';
 
   return (
     <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 flex items-center gap-4">
-      {/* Avatar */}
-      {user.profilePictureUrl ? (
-        <img
-          src={user.profilePictureUrl}
-          alt={fullName}
-          className="w-16 h-16 rounded-full object-cover shrink-0"
-        />
-      ) : (
-        <div className="w-16 h-16 rounded-full bg-sky-100 text-sky-700 font-semibold flex items-center justify-center text-xl shrink-0">
-          {initials}
-        </div>
-      )}
+      <Avatar
+        firstName={user.firstName ?? ''}
+        lastName={user.lastName ?? ''}
+        profilePictureUrl={user.profilePictureUrl}
+        size="lg"
+      />
 
       {/* Info */}
       <div className="min-w-0">

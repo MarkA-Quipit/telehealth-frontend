@@ -7,6 +7,8 @@ import type { DoctorFilters } from '../types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/ui/collapsible';
 import { SymptomChecker } from '@/features/ai/components/SymptomChecker';
 import { useAuthContext } from '@/app/providers/AuthProvider';
+import { Button } from '@/shared/ui/button';
+import { EmptyState } from '@/shared/components/EmptyState';
 
 function CardSkeleton() {
   return (
@@ -56,10 +58,10 @@ export function DoctorListPage() {
       {isPatient && (
         <Collapsible defaultOpen={false}>
           <CollapsibleTrigger asChild>
-            <button className="flex items-center gap-2 border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 font-medium rounded-lg px-4 py-2 text-sm transition mb-4">
+            <Button variant="secondary" className="flex items-center gap-2 mb-4">
               <Sparkles className="h-4 w-4 text-sky-500" />
               Find doctors by symptoms
-            </button>
+            </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mb-6">
             <SymptomChecker />
@@ -81,21 +83,23 @@ export function DoctorListPage() {
           ))}
         </div>
       ) : data?.items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+        <EmptyState
+          icon={
             <svg className="w-6 h-6 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-          </div>
-          <h3 className="text-sm font-semibold text-neutral-900 mb-1">No doctors found</h3>
-          <p className="text-sm text-neutral-500 mb-4">No doctors found matching your search.</p>
-          <button
-            onClick={() => handleFilterChange({ specialization: undefined, search: undefined, page: 1 })}
-            className="text-sm text-sky-600 hover:text-sky-800 font-medium transition"
-          >
-            Clear filters
-          </button>
-        </div>
+          }
+          title="No doctors found"
+          description="No doctors found matching your search."
+          action={
+            <button
+              onClick={() => handleFilterChange({ specialization: undefined, search: undefined, page: 1 })}
+              className="text-sm text-sky-600 hover:text-sky-800 font-medium transition"
+            >
+              Clear filters
+            </button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {data?.items.map((doctor) => (
@@ -107,23 +111,25 @@ export function DoctorListPage() {
       {/* Pagination */}
       {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">
-          <button
+          <Button
+            variant="secondary"
             onClick={() => handleFilterChange({ page: currentPage - 1 })}
             disabled={currentPage <= 1}
-            className="border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="disabled:cursor-not-allowed"
           >
             Prev
-          </button>
+          </Button>
           <span className="text-sm text-neutral-500">
             Page {currentPage} of {totalPages}
           </span>
-          <button
+          <Button
+            variant="secondary"
             onClick={() => handleFilterChange({ page: currentPage + 1 })}
             disabled={currentPage >= totalPages}
-            className="border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="disabled:cursor-not-allowed"
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
     </div>

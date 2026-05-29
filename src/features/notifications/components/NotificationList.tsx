@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { EmptyState } from '@/shared/components/EmptyState';
 import {
   CalendarPlus,
   CalendarCheck,
@@ -116,10 +117,11 @@ export function NotificationList({
             <SkeletonRow />
           </>
         ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-center">
-            <Bell className="w-8 h-8 text-neutral-300 mb-2" />
-            <p className="text-sm text-neutral-500">No notifications yet</p>
-          </div>
+          <EmptyState
+            padding="md"
+            icon={<Bell className="w-6 h-6 text-neutral-400" />}
+            description="No notifications yet"
+          />
         ) : (
           notifications.map((n) => {
             const Icon = TYPE_ICON[n.type] ?? Bell;

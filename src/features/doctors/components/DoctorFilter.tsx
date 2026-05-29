@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { getSpecializations } from '../api/doctors.api';
+import { Input } from '@/shared/ui/input';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { DoctorFilters } from '../types';
 
@@ -87,45 +88,45 @@ export function DoctorFilter({ filters, onFilterChange }: DoctorFilterProps) {
       {/* Search input */}
       <div className="space-y-1 flex-1 min-w-[160px]">
         <label className="text-xs font-medium text-neutral-500">Search</label>
-        <input
+        <Input
           type="text"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by name…"
-          className="w-full h-9 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9"
         />
       </div>
 
       {/* Min price */}
       <div className="space-y-1 min-w-[100px]">
         <label className="text-xs font-medium text-neutral-500">Min Price (₱)</label>
-        <input
+        <Input
           type="number"
           min={0}
           value={minPriceInput}
           onChange={(e) => handleMinPrice(e.target.value)}
           placeholder="0"
-          className="w-full h-9 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9"
         />
       </div>
 
       {/* Max price */}
       <div className="space-y-1 min-w-[100px]">
         <label className="text-xs font-medium text-neutral-500">Max Price (₱)</label>
-        <input
+        <Input
           type="number"
           min={0}
           value={maxPriceInput}
           onChange={(e) => handleMaxPrice(e.target.value)}
           placeholder="Any"
-          className="w-full h-9 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9"
         />
       </div>
 
       {/* Min experience */}
       <div className="space-y-1 min-w-[100px]">
         <label className="text-xs font-medium text-neutral-500">Min Experience</label>
-        <input
+        <Input
           type="number"
           min={0}
           value={filters.minExperience ?? ''}
@@ -137,7 +138,7 @@ export function DoctorFilter({ filters, onFilterChange }: DoctorFilterProps) {
             })
           }
           placeholder="Any yrs"
-          className="w-full h-9 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9"
         />
       </div>
 

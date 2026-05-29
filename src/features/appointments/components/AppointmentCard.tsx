@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { formatDateWithWeekday, formatTime } from '@/shared/lib/date';
 import type { AppointmentWithDetails, AppointmentStatus } from '../types';
 import { AppointmentStatusBadge } from './AppointmentStatusBadge';
 
@@ -19,17 +20,8 @@ export function AppointmentCard({ appointment, role }: Props) {
   const status = appointment.status as AppointmentStatus;
   const borderColor = BORDER_COLOR[status] ?? 'border-l-neutral-300';
 
-  const scheduledDate = new Date(appointment.scheduledAt);
-  const dateStr = scheduledDate.toLocaleDateString(undefined, {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-  const timeStr = scheduledDate.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const dateStr = formatDateWithWeekday(appointment.scheduledAt);
+  const timeStr = formatTime(appointment.scheduledAt);
 
   const detailPath =
     role === 'patient'

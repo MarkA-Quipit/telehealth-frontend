@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Loader2, Trash2, CalendarOff } from 'lucide-react';
+import { formatDateUTC } from '@/shared/lib/date';
+import { Button } from '@/shared/ui/button';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser } from '@/features/users/hooks/useUser';
 import {
@@ -37,11 +39,6 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formatBlockedDate(date: string): string {
-  // "YYYY-MM-DD" → "June 3, 2026"
-  const d = new Date(`${date}T12:00:00Z`);
-  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -311,14 +308,14 @@ export function DoctorAvailabilityPage() {
 
             {/* Save button */}
             <div className="flex justify-end pt-2">
-              <button
+              <Button
                 onClick={handleSaveSchedule}
                 disabled={scheduleSaving}
-                className="flex items-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-5 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 disabled:cursor-not-allowed"
               >
                 {scheduleSaving && <Loader2 className="h-4 w-4 animate-spin" />}
                 Save Schedule
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -328,12 +325,13 @@ export function DoctorAvailabilityPage() {
       <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-5">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-neutral-900">Blocked Slots</h2>
-          <button
+          <Button
             onClick={() => setShowAddForm((v) => !v)}
-            className="flex items-center gap-1.5 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-3 py-1.5 text-sm transition"
+            size="sm"
+            className="flex items-center gap-1.5"
           >
             {showAddForm ? 'Cancel' : 'Add'}
-          </button>
+          </Button>
         </div>
 
         {/* Add form — collapsed by default, toggled by "Add" button */}
@@ -381,14 +379,14 @@ export function DoctorAvailabilityPage() {
               </div>
             </div>
             <div className="flex justify-end">
-              <button
+              <Button
                 onClick={handleAddSlot}
                 disabled={addingSlot}
-                className="flex items-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 disabled:cursor-not-allowed"
               >
                 {addingSlot && <Loader2 className="h-4 w-4 animate-spin" />}
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -418,7 +416,7 @@ export function DoctorAvailabilityPage() {
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="shrink-0">
                     <p className="text-sm font-medium text-neutral-900">
-                      {formatBlockedDate(slot.blockedDate)}
+                      {formatDateUTC(slot.blockedDate)}
                     </p>
                     <p className="text-xs text-neutral-500">
                       {slot.startTime} – {slot.endTime}

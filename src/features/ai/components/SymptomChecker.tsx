@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { DoctorCard } from '@/features/doctors/components/DoctorCard';
 import { useAIRecommendation } from '../hooks/useAIRecommendation';
+import { Button } from '@/shared/ui/button';
 
 export function SymptomChecker() {
   const [symptoms, setSymptoms] = useState('');
@@ -47,14 +48,14 @@ export function SymptomChecker() {
       </div>
 
       {/* Submit button */}
-      <button
+      <Button
         onClick={handleSubmit}
         disabled={isPending || symptoms.trim().length < 10}
-        className="flex items-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 disabled:cursor-not-allowed"
       >
         {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         Find Matching Doctors
-      </button>
+      </Button>
 
       {/* Error state */}
       {isError && (

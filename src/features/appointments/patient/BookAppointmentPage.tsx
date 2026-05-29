@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useDoctor } from '@/features/doctors/hooks/useDoctors';
 import { AvailabilityCalendar } from '@/features/doctors/components/AvailabilityCalendar';
 import { useCreateAppointment } from '../hooks/useAppointments';
+import { Button } from '@/shared/ui/button';
 
 interface SelectedSlot {
   date: string;
@@ -138,10 +139,10 @@ export function BookAppointmentPage() {
 
       {/* Submit */}
       <form onSubmit={handleSubmit}>
-        <button
+        <Button
           type="submit"
           disabled={!selectedSlot || createAppointment.isPending}
-          className="w-full bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-3 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 disabled:cursor-not-allowed"
         >
           {createAppointment.isPending ? (
             <span className="flex items-center justify-center gap-2">
@@ -154,7 +155,7 @@ export function BookAppointmentPage() {
           ) : (
             'Confirm Booking'
           )}
-        </button>
+        </Button>
       </form>
     </div>
   );

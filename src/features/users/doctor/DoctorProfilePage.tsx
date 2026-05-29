@@ -6,6 +6,8 @@ import { useUser, useUpdateUser } from '../hooks/useUser';
 import { useDoctor, useUpdateDoctor } from '@/features/doctors/hooks/useDoctors';
 import { ProfileCard } from '../components/ProfileCard';
 import { AvatarUpload } from '../components/AvatarUpload';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 
 interface FormValues {
   firstName: string;
@@ -141,17 +143,17 @@ export function DoctorProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">First Name</label>
-              <input
+              <Input
                 {...register('firstName')}
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="Enter first name"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Last Name</label>
-              <input
+              <Input
                 {...register('lastName')}
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="Enter last name"
               />
             </div>
@@ -159,10 +161,10 @@ export function DoctorProfilePage() {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-neutral-700">Phone Number</label>
-            <input
+            <Input
               {...register('phone')}
               type="tel"
-              className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              className="h-10"
               placeholder="Enter phone number"
             />
           </div>
@@ -174,9 +176,9 @@ export function DoctorProfilePage() {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-neutral-700">Specialization</label>
-            <input
+            <Input
               {...register('specialization')}
-              className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              className="h-10"
               placeholder="e.g. General Practitioner, Cardiologist"
             />
           </div>
@@ -194,11 +196,11 @@ export function DoctorProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Years of Experience</label>
-              <input
+              <Input
                 {...register('yearsOfExperience')}
                 type="number"
                 min="0"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="e.g. 5"
               />
             </div>
@@ -207,11 +209,11 @@ export function DoctorProfilePage() {
                 Consultation Fee{' '}
                 <span className="text-xs font-normal text-neutral-400">(stored as centavos — enter 50000 for ₱500)</span>
               </label>
-              <input
+              <Input
                 {...register('consultationFee')}
                 type="number"
                 min="0"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
                 placeholder="e.g. 50000"
               />
             </div>
@@ -219,9 +221,9 @@ export function DoctorProfilePage() {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-neutral-700">License Number</label>
-            <input
+            <Input
               {...register('licenseNumber')}
-              className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              className="h-10"
               placeholder="Professional license number"
             />
           </div>
@@ -255,10 +257,10 @@ export function DoctorProfilePage() {
         </div>
 
         {/* Save Button */}
-        <button
+        <Button
           type="submit"
           disabled={isSaving}
-          className="w-full flex items-center justify-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2.5 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 py-2.5 disabled:cursor-not-allowed"
         >
           {isSaving && (
             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -267,7 +269,7 @@ export function DoctorProfilePage() {
             </svg>
           )}
           {isSaving ? 'Saving…' : 'Save Changes'}
-        </button>
+        </Button>
       </form>
     </div>
   );

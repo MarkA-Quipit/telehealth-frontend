@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/shared/ui/button';
+import { Avatar } from '@/shared/components/Avatar';
 import type { DoctorWithUser } from '../types';
 
 interface DoctorCardProps {
@@ -6,9 +8,6 @@ interface DoctorCardProps {
   compact?: boolean;
 }
 
-function getInitials(firstName: string, lastName: string): string {
-  return (firstName[0]?.toUpperCase() ?? '') + (lastName[0]?.toUpperCase() ?? '');
-}
 
 function StarRating({ rating, count }: { rating: number; count: number }) {
   const full = Math.floor(rating);
@@ -37,7 +36,6 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
 
 export function DoctorCard({ doctor, compact = false }: DoctorCardProps) {
   const navigate = useNavigate();
-  const initials = getInitials(doctor.firstName, doctor.lastName);
   const fullName = `${doctor.firstName} ${doctor.lastName}`;
   const feeDisplay =
     doctor.consultationFee != null
@@ -47,17 +45,12 @@ export function DoctorCard({ doctor, compact = false }: DoctorCardProps) {
   if (compact) {
     return (
       <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-4 flex items-center gap-3">
-        {doctor.profilePictureUrl ? (
-          <img
-            src={doctor.profilePictureUrl}
-            alt={fullName}
-            className="w-10 h-10 rounded-full object-cover shrink-0"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-sky-100 text-sky-700 font-semibold flex items-center justify-center text-sm shrink-0">
-            {initials}
-          </div>
-        )}
+        <Avatar
+          firstName={doctor.firstName}
+          lastName={doctor.lastName}
+          profilePictureUrl={doctor.profilePictureUrl}
+          size="sm"
+        />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-neutral-900 truncate">{fullName}</p>
           <p className="text-xs text-neutral-500 truncate">{doctor.specialization}</p>
@@ -71,17 +64,12 @@ export function DoctorCard({ doctor, compact = false }: DoctorCardProps) {
       {/* Avatar + name + accepting badge (top-right) */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          {doctor.profilePictureUrl ? (
-            <img
-              src={doctor.profilePictureUrl}
-              alt={fullName}
-              className="w-16 h-16 rounded-full object-cover shrink-0"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-sky-100 text-sky-700 font-semibold flex items-center justify-center text-xl shrink-0">
-              {initials}
-            </div>
-          )}
+          <Avatar
+            firstName={doctor.firstName}
+            lastName={doctor.lastName}
+            profilePictureUrl={doctor.profilePictureUrl}
+            size="lg"
+          />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-neutral-900 truncate">{fullName}</p>
             <p className="text-sm text-neutral-500 truncate">{doctor.specialization}</p>
@@ -118,12 +106,9 @@ export function DoctorCard({ doctor, compact = false }: DoctorCardProps) {
       </div>
 
       {/* View profile button */}
-      <button
-        onClick={() => navigate(`/patient/doctors/${doctor.id}`)}
-        className="w-full bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition"
-      >
+      <Button onClick={() => navigate(`/patient/doctors/${doctor.id}`)} className="w-full">
         View Doctor Profile
-      </button>
+      </Button>
     </div>
   );
 }

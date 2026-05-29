@@ -7,6 +7,8 @@ import { useDoctorReviews } from '@/features/doctors/hooks/useDoctors';
 import { submitReview } from '@/features/doctors/api/doctors.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
+import { formatDateLong, formatTime } from '@/shared/lib/date';
+import { Button } from '@/shared/ui/button';
 import { AppointmentStatusBadge } from '../components/AppointmentStatusBadge';
 
 function SkeletonPage() {
@@ -135,13 +137,9 @@ function LeaveReviewSection({
         <p className="text-xs text-neutral-400 text-right">{comment.length}/1000</p>
       </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={submitting || !rating}
-        className="bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <Button onClick={handleSubmit} disabled={submitting || !rating} className="disabled:cursor-not-allowed">
         {submitting ? 'Submitting…' : 'Submit Review'}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -231,9 +229,9 @@ export function AppointmentDetailPage() {
             </p>
             <p className="text-sm text-neutral-500">{appointment.doctor.specialization}</p>
             <p className="text-sm text-neutral-700 mt-1">
-              {scheduled.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              {formatDateLong(appointment.scheduledAt)}
               {' · '}
-              {scheduled.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              {formatTime(appointment.scheduledAt)}
             </p>
           </div>
           <AppointmentStatusBadge status={appointment.status as 'pending' | 'confirmed' | 'cancelled' | 'completed'} />
@@ -245,14 +243,14 @@ export function AppointmentDetailPage() {
         <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
           <h3 className="text-base font-semibold text-neutral-900 mb-3">Video Consultation</h3>
           <div className="flex items-center gap-3">
-            <button
+            <Button
               onClick={() => isEligible && navigate(`/patient/consultation/${id}`)}
               disabled={!isEligible}
               title={!isEligible ? 'Session not yet available' : undefined}
-              className="bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="disabled:cursor-not-allowed"
             >
               Join Consultation
-            </button>
+            </Button>
             {!isEligible && (
               <p className="text-xs text-neutral-500">
                 Session opens 5 minutes before scheduled time.
@@ -283,9 +281,9 @@ export function AppointmentDetailPage() {
           {/* Reschedule */}
           <Dialog.Root open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
             <Dialog.Trigger asChild>
-              <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 font-medium rounded-lg px-4 py-2.5 text-sm transition">
+              <Button variant="secondary" className="flex-1 py-2.5">
                 Reschedule
-              </button>
+              </Button>
             </Dialog.Trigger>
             <Dialog.Portal>
               <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
@@ -298,17 +296,15 @@ export function AppointmentDetailPage() {
                 </p>
                 <div className="flex gap-3">
                   <Dialog.Close asChild>
-                    <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition">
-                      Keep Appointment
-                    </button>
+                    <Button variant="secondary" className="flex-1">Keep Appointment</Button>
                   </Dialog.Close>
-                  <button
+                  <Button
                     onClick={handleReschedule}
                     disabled={cancelMutation.isPending}
-                    className="flex-1 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
+                    className="flex-1"
                   >
                     {cancelMutation.isPending ? 'Processing…' : 'Confirm Reschedule'}
-                  </button>
+                  </Button>
                 </div>
               </Dialog.Content>
             </Dialog.Portal>
@@ -317,9 +313,9 @@ export function AppointmentDetailPage() {
           {/* Cancel */}
           <Dialog.Root open={cancelOpen} onOpenChange={setCancelOpen}>
             <Dialog.Trigger asChild>
-              <button className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2.5 text-sm transition">
+              <Button variant="destructive" className="flex-1 py-2.5">
                 Cancel Appointment
-              </button>
+              </Button>
             </Dialog.Trigger>
             <Dialog.Portal>
               <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
@@ -341,17 +337,16 @@ export function AppointmentDetailPage() {
                 </div>
                 <div className="flex gap-3">
                   <Dialog.Close asChild>
-                    <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition">
-                      Keep Appointment
-                    </button>
+                    <Button variant="secondary" className="flex-1">Keep Appointment</Button>
                   </Dialog.Close>
-                  <button
+                  <Button
+                    variant="destructive"
                     onClick={handleCancel}
                     disabled={cancelMutation.isPending}
-                    className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
+                    className="flex-1"
                   >
                     {cancelMutation.isPending ? 'Cancelling…' : 'Cancel Appointment'}
-                  </button>
+                  </Button>
                 </div>
               </Dialog.Content>
             </Dialog.Portal>

@@ -5,6 +5,9 @@ import { AppointmentDataTable } from '../components/AppointmentDataTable';
 import { PatientSearchFilter } from '../components/PatientSearchFilter';
 import { FilterTabs } from '../components/FilterTabs';
 import { AppointmentSkeletonTable } from '../components/AppointmentSkeletonTable';
+import { Avatar } from '@/shared/components/Avatar';
+import { MedicalPill } from '../components/MedicalPill';
+import { EmptyState } from '@/shared/components/EmptyState';
 import type { AppointmentStatus, PatientSearchResult, PatientSearchFilters } from '../types';
 
 const FILTER_TABS = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'] as const;
@@ -19,31 +22,7 @@ const STATUS_MAP: Record<FilterTab, AppointmentStatus | undefined> = {
 };
 
 
-function PatientAvatar({ patient }: { patient: PatientSearchResult }) {
-  if (patient.profilePictureUrl) {
-    return (
-      <img
-        src={patient.profilePictureUrl}
-        alt={`${patient.firstName} ${patient.lastName}`}
-        className="w-9 h-9 rounded-full object-cover shrink-0"
-      />
-    );
-  }
-  return (
-    <div className="w-9 h-9 rounded-full bg-sky-100 text-sky-700 font-semibold text-sm flex items-center justify-center shrink-0">
-      {patient.firstName[0]}{patient.lastName[0]}
-    </div>
-  );
-}
 
-function MedicalPill({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs bg-neutral-100 text-neutral-600 rounded-full px-2.5 py-0.5">
-      <span className="text-neutral-400">{label}:</span>
-      <span className="font-medium">{value}</span>
-    </span>
-  );
-}
 
 function PatientSearchResults({ filters }: { filters: PatientSearchFilters }) {
   const { data, isLoading } = usePatientSearch(filters);
@@ -67,16 +46,16 @@ function PatientSearchResults({ filters }: { filters: PatientSearchFilters }) {
 
   if (patients.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+      <EmptyState
+        icon={
           <svg className="w-6 h-6 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
           </svg>
-        </div>
-        <h3 className="text-sm font-semibold text-neutral-900 mb-1">No patients found</h3>
-        <p className="text-sm text-neutral-500">No patients match the current filters.</p>
-      </div>
+        }
+        title="No patients found"
+        description="No patients match the current filters."
+      />
     );
   }
 
@@ -99,7 +78,12 @@ function PatientSearchResults({ filters }: { filters: PatientSearchFilters }) {
               to={`/doctor/patients/${patient.id}`}
               className="flex items-start gap-3 px-5 py-4 hover:bg-neutral-50 transition group"
             >
-              <PatientAvatar patient={patient} />
+              <Avatar
+                firstName={patient.firstName}
+                lastName={patient.lastName}
+                profilePictureUrl={patient.profilePictureUrl}
+                size="sm"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-neutral-900 group-hover:text-sky-700 transition">
                   {patient.firstName} {patient.lastName}
@@ -179,22 +163,20 @@ export function DoctorAppointmentListPage() {
               detailBasePath="/doctor/appointments"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+            <EmptyState
+              icon={
                 <svg className="w-6 h-6 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-              </div>
-              <h3 className="text-sm font-semibold text-neutral-900 mb-1">
-                No {activeTab.toLowerCase()} appointments
-              </h3>
-              <p className="text-sm text-neutral-500">
-                {activeTab === 'All'
+              }
+              title={`No ${activeTab.toLowerCase()} appointments`}
+              description={
+                activeTab === 'All'
                   ? 'Your appointments will appear here once patients start booking.'
-                  : `No appointments with status "${activeTab.toLowerCase()}" yet.`}
-              </p>
-            </div>
+                  : `No appointments with status "${activeTab.toLowerCase()}" yet.`
+              }
+            />
           )}
 
           {/* Pagination */}

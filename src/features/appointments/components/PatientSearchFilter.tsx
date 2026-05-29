@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { Input } from '@/shared/ui/input';
 import type { PatientSearchFilters } from '../types';
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'unknown'] as const;
@@ -40,12 +41,12 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
       {/* Keyword search */}
       <div className="space-y-1 flex-1 min-w-[180px]">
         <label className="text-xs font-medium text-neutral-500">Search</label>
-        <input
+        <Input
           type="text"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Allergy, medication, condition, name…"
-          className="w-full h-9 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9"
         />
       </div>
 
@@ -98,7 +99,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
       {/* Min consultations */}
       <div className="space-y-1 min-w-[130px]">
         <label className="text-xs font-medium text-neutral-500">Min Consultations</label>
-        <input
+        <Input
           type="number"
           min={1}
           value={filters.minConsultations ?? ''}
@@ -110,7 +111,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
             })
           }
           placeholder="Any"
-          className="w-full h-9 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+          className="h-9"
         />
       </div>
 

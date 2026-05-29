@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import { useUploadAvatar } from '../hooks/useUser';
+import { Button } from '@/shared/ui/button';
+import { Avatar } from '@/shared/components/Avatar';
 
 interface AvatarUploadProps {
   userId: string;
@@ -11,12 +13,6 @@ interface AvatarUploadProps {
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-function getInitials(firstName?: string | null, lastName?: string | null): string {
-  const f = firstName?.trim()[0]?.toUpperCase() ?? '';
-  const l = lastName?.trim()[0]?.toUpperCase() ?? '';
-  return f + l || '?';
-}
-
 export function AvatarUpload({ userId, currentUrl, firstName, lastName }: AvatarUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -24,7 +20,6 @@ export function AvatarUpload({ userId, currentUrl, firstName, lastName }: Avatar
   const [sizeError, setSizeError] = useState<string | null>(null);
   const { mutateAsync: upload, isPending } = useUploadAvatar();
 
-  const initials = getInitials(firstName, lastName);
   const displayUrl = preview ?? currentUrl;
 
   function handleFileSelect(file: File) {
@@ -68,17 +63,12 @@ export function AvatarUpload({ userId, currentUrl, firstName, lastName }: Avatar
 
       <div className="flex items-center gap-4">
         {/* Avatar preview */}
-        {displayUrl ? (
-          <img
-            src={displayUrl}
-            alt="Avatar"
-            className="w-20 h-20 rounded-full object-cover shrink-0"
-          />
-        ) : (
-          <div className="w-20 h-20 rounded-full bg-sky-100 text-sky-700 font-semibold flex items-center justify-center text-2xl shrink-0">
-            {initials}
-          </div>
-        )}
+        <Avatar
+          firstName={firstName ?? ''}
+          lastName={lastName ?? ''}
+          profilePictureUrl={displayUrl}
+          size="xl"
+        />
 
         {/* Drop zone + controls */}
         <div className="flex-1">
@@ -106,10 +96,10 @@ export function AvatarUpload({ userId, currentUrl, firstName, lastName }: Avatar
           )}
 
           {selectedFile && !sizeError && (
-            <button
+            <Button
               onClick={handleUpload}
               disabled={isPending}
-              className="mt-2 inline-flex items-center gap-2 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-2 inline-flex items-center gap-2 disabled:cursor-not-allowed"
             >
               {isPending && (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -118,7 +108,7 @@ export function AvatarUpload({ userId, currentUrl, firstName, lastName }: Avatar
                 </svg>
               )}
               {isPending ? 'Uploading…' : 'Upload Photo'}
-            </button>
+            </Button>
           )}
         </div>
       </div>

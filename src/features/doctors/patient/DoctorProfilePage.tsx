@@ -1,11 +1,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDoctor, useDoctorReviews } from '../hooks/useDoctors';
+import { formatDate } from '@/shared/lib/date';
+import { Avatar } from '@/shared/components/Avatar';
+import { Button } from '@/shared/ui/button';
+import { EmptyState } from '@/shared/components/EmptyState';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import type { Review } from '../types';
 
-function getInitials(firstName: string, lastName: string): string {
-  return (firstName[0]?.toUpperCase() ?? '') + (lastName[0]?.toUpperCase() ?? '');
-}
 
 function ProfileSkeleton() {
   return (
@@ -109,29 +110,17 @@ function ReviewsSection({ doctorId }: { doctorId: string }) {
       {/* Review list */}
       <div className="divide-y divide-neutral-100">
         {reviews.map((review: Review) => {
-          const patientInitials =
-            (review.patient.firstName[0]?.toUpperCase() ?? '') +
-            (review.patient.lastName[0]?.toUpperCase() ?? '');
-          const reviewDate = new Date(review.createdAt).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          });
+          const reviewDate = formatDate(review.createdAt);
 
           return (
             <div key={review.id} className="py-4 space-y-1.5">
               <div className="flex items-center gap-3">
-                {review.patient.profilePictureUrl ? (
-                  <img
-                    src={review.patient.profilePictureUrl}
-                    alt=""
-                    className="w-8 h-8 rounded-full object-cover shrink-0"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-700 font-semibold flex items-center justify-center text-xs shrink-0">
-                    {patientInitials}
-                  </div>
-                )}
+                <Avatar
+                  firstName={review.patient.firstName}
+                  lastName={review.patient.lastName}
+                  profilePictureUrl={review.patient.profilePictureUrl}
+                  size="xs"
+                />
                 <div>
                   <p className="text-sm font-medium text-neutral-900">
                     {review.patient.firstName} {review.patient.lastName}
@@ -170,25 +159,19 @@ export function DoctorProfilePage() {
 
   if (isError || !doctor) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+      <EmptyState
+        icon={
           <svg className="w-6 h-6 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.962-.833-2.732 0L3.07 16.5C2.3 17.333 3.262 19 4.802 19z" />
           </svg>
-        </div>
-        <h3 className="text-sm font-semibold text-neutral-900 mb-1">Doctor not found</h3>
-        <p className="text-sm text-neutral-500 mb-4">This doctor profile could not be loaded.</p>
-        <button
-          onClick={() => navigate('/patient/doctors')}
-          className="bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition"
-        >
-          Back to Doctors
-        </button>
-      </div>
+        }
+        title="Doctor not found"
+        description="This doctor profile could not be loaded."
+        action={<Button onClick={() => navigate('/patient/doctors')}>Back to Doctors</Button>}
+      />
     );
   }
 
-  const initials = getInitials(doctor.firstName, doctor.lastName);
   const fullName = `${doctor.firstName} ${doctor.lastName}`;
   const feeDisplay =
     doctor.consultationFee != null
@@ -211,17 +194,12 @@ export function DoctorProfilePage() {
       {/* Hero card */}
       <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
         <div className="flex items-start gap-4">
-          {doctor.profilePictureUrl ? (
-            <img
-              src={doctor.profilePictureUrl}
-              alt={fullName}
-              className="w-20 h-20 rounded-full object-cover shrink-0"
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-sky-100 text-sky-700 font-semibold flex items-center justify-center text-2xl shrink-0">
-              {initials}
-            </div>
-          )}
+          <Avatar
+            firstName={doctor.firstName}
+            lastName={doctor.lastName}
+            profilePictureUrl={doctor.profilePictureUrl}
+            size="xl"
+          />
 
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">{fullName}</h1>

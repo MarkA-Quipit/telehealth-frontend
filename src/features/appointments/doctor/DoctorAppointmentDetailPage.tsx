@@ -4,6 +4,9 @@ import { toast } from 'sonner';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAppointment, useUpdateStatus, useCancelAppointment, useNotes, useSaveNotes, usePrescriptions, useAddPrescription, useDeletePrescription } from '../hooks/useAppointments';
 import { usePatient } from '@/features/patients/hooks/usePatient';
+import { formatDateLong, formatTime } from '@/shared/lib/date';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 import { AppointmentStatusBadge } from '../components/AppointmentStatusBadge';
 
 function SkeletonPage() {
@@ -177,9 +180,9 @@ export function DoctorAppointmentDetailPage() {
               {appointment.patient.firstName} {appointment.patient.lastName}
             </p>
             <p className="text-sm text-neutral-500 mt-0.5">
-              {scheduled.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              {formatDateLong(appointment.scheduledAt)}
               {' · '}
-              {scheduled.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              {formatTime(appointment.scheduledAt)}
             </p>
             {appointment.reasonForVisit && (
               <p className="text-sm text-neutral-600 mt-1 italic">"{appointment.reasonForVisit}"</p>
@@ -192,18 +195,18 @@ export function DoctorAppointmentDetailPage() {
       {/* Action buttons */}
       {appointment.status === 'pending' && (
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={handleConfirm}
             disabled={updateStatus.isPending}
-            className="flex-1 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2.5 text-sm transition disabled:opacity-50"
+            className="flex-1 py-2.5"
           >
             {updateStatus.isPending ? 'Confirming…' : 'Confirm Appointment'}
-          </button>
+          </Button>
           <Dialog.Root open={cancelOpen} onOpenChange={setCancelOpen}>
             <Dialog.Trigger asChild>
-              <button className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2.5 text-sm transition">
+              <Button variant="destructive" className="flex-1 py-2.5">
                 Cancel
-              </button>
+              </Button>
             </Dialog.Trigger>
             <CancelDialog
               reason={cancelReason}
@@ -224,19 +227,19 @@ export function DoctorAppointmentDetailPage() {
           >
             {updateStatus.isPending ? 'Completing…' : 'Mark as Completed'}
           </button>
-          <button
+          <Button
             onClick={() => isEligible && navigate(`/doctor/consultation/${id}`)}
             disabled={!isEligible}
             title={!isEligible ? 'Session not yet available' : undefined}
-            className="flex-1 bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2.5 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-2.5 disabled:cursor-not-allowed"
           >
             Join Session
-          </button>
+          </Button>
           <Dialog.Root open={cancelOpen} onOpenChange={setCancelOpen}>
             <Dialog.Trigger asChild>
-              <button className="bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2.5 text-sm transition">
+              <Button variant="destructive" className="py-2.5">
                 Cancel
-              </button>
+              </Button>
             </Dialog.Trigger>
             <CancelDialog
               reason={cancelReason}
@@ -317,20 +320,16 @@ export function DoctorAppointmentDetailPage() {
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-neutral-700">Follow-up Date</label>
-            <input
+            <Input
               type="date"
               value={noteForm.followUpDate}
               onChange={(e) => setNoteForm((f) => ({ ...f, followUpDate: e.target.value }))}
-              className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              className="h-10"
             />
           </div>
-          <button
-            type="submit"
-            disabled={saveNotesMutation.isPending}
-            className="bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
-          >
+          <Button type="submit" disabled={saveNotesMutation.isPending}>
             {saveNotesMutation.isPending ? 'Saving…' : 'Save Notes'}
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -343,62 +342,58 @@ export function DoctorAppointmentDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Medication Name *</label>
-              <input
+              <Input
                 type="text"
                 required
                 value={rxForm.medicationName}
                 onChange={(e) => setRxForm((f) => ({ ...f, medicationName: e.target.value }))}
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Dosage</label>
-              <input
+              <Input
                 type="text"
                 value={rxForm.dosage}
                 onChange={(e) => setRxForm((f) => ({ ...f, dosage: e.target.value }))}
                 placeholder="e.g. 500mg"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Frequency</label>
-              <input
+              <Input
                 type="text"
                 value={rxForm.frequency}
                 onChange={(e) => setRxForm((f) => ({ ...f, frequency: e.target.value }))}
                 placeholder="e.g. Twice daily"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-neutral-700">Duration</label>
-              <input
+              <Input
                 type="text"
                 value={rxForm.duration}
                 onChange={(e) => setRxForm((f) => ({ ...f, duration: e.target.value }))}
                 placeholder="e.g. 7 days"
-                className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                className="h-10"
               />
             </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-neutral-700">Instructions</label>
-            <input
+            <Input
               type="text"
               value={rxForm.instructions}
               onChange={(e) => setRxForm((f) => ({ ...f, instructions: e.target.value }))}
               placeholder="Take with food"
-              className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+              className="h-10"
             />
           </div>
-          <button
-            type="submit"
-            disabled={addRxMutation.isPending || !rxForm.medicationName.trim()}
-            className="bg-sky-100 text-sky-700 hover:bg-sky-200 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
-          >
+          <Button type="submit" disabled={addRxMutation.isPending || !rxForm.medicationName.trim()}>
             {addRxMutation.isPending ? 'Adding…' : 'Add Prescription'}
-          </button>
+          </Button>
         </form>
 
         {/* Existing list */}
@@ -474,17 +469,18 @@ function CancelDialog({
         </div>
         <div className="flex gap-3">
           <Dialog.Close asChild>
-            <button className="flex-1 border border-neutral-200 bg-white text-neutral-700 font-medium rounded-lg px-4 py-2 text-sm hover:bg-neutral-50 transition">
+            <Button variant="secondary" className="flex-1">
               Keep Appointment
-            </button>
+            </Button>
           </Dialog.Close>
-          <button
+          <Button
+            variant="destructive"
             onClick={onConfirm}
             disabled={isPending}
-            className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 font-medium rounded-lg px-4 py-2 text-sm transition disabled:opacity-50"
+            className="flex-1"
           >
             {isPending ? 'Cancelling…' : 'Cancel Appointment'}
-          </button>
+          </Button>
         </div>
       </Dialog.Content>
     </Dialog.Portal>
