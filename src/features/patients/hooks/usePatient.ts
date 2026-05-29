@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPatient, updatePatient } from '../api/patients.api';
+import { getPatient, updatePatient, getPatientHistory } from '../api/patients.api';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { UpdatePatientDto } from '../types';
 
@@ -8,6 +8,15 @@ export function usePatient(id?: string | null) {
     queryKey: QUERY_KEYS.patients.detail(id ?? ''),
     queryFn: () => getPatient(id!),
     enabled: !!id,
+  });
+}
+
+export function usePatientHistory(patientId?: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.patients.history(patientId ?? ''),
+    queryFn: () => getPatientHistory(patientId!),
+    enabled: !!patientId,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

@@ -9,6 +9,8 @@ import type {
   Prescription,
   PaginatedAppointments,
   AppointmentFilters,
+  PaginatedPatientSearch,
+  PatientSearchFilters,
 } from '../types';
 
 export async function createAppointment(dto: CreateAppointmentDto): Promise<Appointment> {
@@ -74,6 +76,20 @@ export async function addPrescription(
 
 export async function deletePrescription(appointmentId: string, prescriptionId: string): Promise<void> {
   await api.delete(`/api/appointments/${appointmentId}/prescriptions/${prescriptionId}`);
+}
+
+export async function searchPatients(
+  filters: PatientSearchFilters,
+): Promise<PaginatedPatientSearch> {
+  const params = new URLSearchParams();
+  if (filters.q) params.set('q', filters.q);
+  if (filters.bloodType) params.set('bloodType', filters.bloodType);
+  if (filters.sex) params.set('sex', filters.sex);
+  if (filters.minConsultations != null) params.set('minConsultations', String(filters.minConsultations));
+  if (filters.page) params.set('page', String(filters.page));
+  if (filters.limit) params.set('limit', String(filters.limit));
+  const { data } = await api.get(`/api/appointments/patients/search?${params.toString()}`);
+  return data.data;
 }
 
 export async function rescheduleAppointment(

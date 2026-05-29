@@ -42,6 +42,9 @@ import { DoctorConsultationPage } from '../../features/consultations/doctor/Cons
 // Doctor — availability
 import { DoctorAvailabilityPage } from '../../features/appointments/doctor/DoctorAvailabilityPage';
 
+// Doctor — patient history
+import { PatientMedicalHistoryPage } from '../../features/users/doctor/PatientMedicalHistoryPage';
+
 // ---------------------------------------------------------------------------
 // ProtectedLayout — guards + renders MainLayout (Outlet receives each page)
 // ---------------------------------------------------------------------------
@@ -169,6 +172,10 @@ export function AppRouter() {
         <Route
           path="/doctor/availability"
           element={<RoleGuard role="doctor"><DoctorAvailabilityPage /></RoleGuard>}
+        />
+        <Route
+          path="/doctor/patients/:patientId"
+          element={<RoleGuard role="doctor"><PatientMedicalHistoryPage /></RoleGuard>}
         />
       </Route>
     </Routes>

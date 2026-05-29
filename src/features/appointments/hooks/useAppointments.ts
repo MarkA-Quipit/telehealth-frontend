@@ -11,9 +11,10 @@ import {
   getPrescriptions,
   addPrescription,
   deletePrescription,
+  searchPatients,
 } from '../api/appointments.api';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
-import type { AppointmentFilters, CreateAppointmentDto, UpdateStatusDto, CancelAppointmentDto, ConsultationNote } from '../types';
+import type { AppointmentFilters, CreateAppointmentDto, UpdateStatusDto, CancelAppointmentDto, ConsultationNote, PatientSearchFilters } from '../types';
 
 // ── List ──────────────────────────────────────────────────────────────────────
 export function useAppointments(filters?: AppointmentFilters) {
@@ -82,6 +83,21 @@ export function useRescheduleAppointment() {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.appointments.detail(newAppt.id) });
       }
     },
+  });
+}
+
+// ── Patient Search (doctor-only) ──────────────────────────────────────────────
+export function usePatientSearch(filters: PatientSearchFilters) {
+  const isEnabled =
+    (filters.q?.trim().length ?? 0) >= 2 ||
+    !!filters.bloodType ||
+    !!filters.sex ||
+    filters.minConsultations != null;
+
+  return useQuery({
+    queryKey: QUERY_KEYS.appointments.patientSearch(filters.q ?? '', filters),
+    queryFn: () => searchPatients(filters),
+    enabled: isEnabled,
   });
 }
 

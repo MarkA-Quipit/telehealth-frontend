@@ -257,20 +257,30 @@ export function DoctorAppointmentDetailPage() {
             <div className="h-4 w-48 bg-neutral-100 rounded" />
           </div>
         ) : (
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div>
-              <dt className="text-neutral-500">Blood Type</dt>
-              <dd className="text-neutral-800 mt-0.5">{patientMedical.bloodType ?? 'Not provided'}</dd>
+          <>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt className="text-neutral-500">Blood Type</dt>
+                <dd className="text-neutral-800 mt-0.5">{patientMedical.bloodType ?? 'Not provided'}</dd>
+              </div>
+              <div>
+                <dt className="text-neutral-500">Allergies</dt>
+                <dd className="text-neutral-800 mt-0.5">{patientMedical.allergies ?? 'Not provided'}</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-neutral-500">Medical History</dt>
+                <dd className="text-neutral-800 mt-0.5 whitespace-pre-wrap">{patientMedical.medicalHistory ?? 'Not provided'}</dd>
+              </div>
+            </dl>
+            <div className="pt-2 border-t border-neutral-100">
+              <Link
+                to={`/doctor/patients/${appointment.patient.id}`}
+                className="text-sm text-sky-700 hover:underline"
+              >
+                View Full Patient History →
+              </Link>
             </div>
-            <div>
-              <dt className="text-neutral-500">Allergies</dt>
-              <dd className="text-neutral-800 mt-0.5">{patientMedical.allergies ?? 'Not provided'}</dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-neutral-500">Medical History</dt>
-              <dd className="text-neutral-800 mt-0.5 whitespace-pre-wrap">{patientMedical.medicalHistory ?? 'Not provided'}</dd>
-            </div>
-          </dl>
+          </>
         )}
       </div>
 

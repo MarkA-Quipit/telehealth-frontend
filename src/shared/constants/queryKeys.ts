@@ -4,6 +4,7 @@ export const QUERY_KEYS = {
   },
   patients: {
     detail: (id: string) => ['patients', id] as const,
+    history: (id: string) => ['patients', id, 'history'] as const,
   },
   doctors: {
     all: (filters?: object) => ['doctors', filters] as const,
@@ -17,6 +18,7 @@ export const QUERY_KEYS = {
     detail: (id: string) => ['appointments', id] as const,
     notes: (id: string) => ['appointments', id, 'notes'] as const,
     prescriptions: (id: string) => ['appointments', id, 'prescriptions'] as const,
+    patientSearch: (q: string, filters?: object) => ['appointments', 'patients', 'search', q, filters] as const,
   },
   notifications: {
     all: () => ['notifications'] as const,

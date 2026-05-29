@@ -93,3 +93,37 @@ export interface AppointmentFilters {
   page?: number;
   limit?: number;
 }
+
+export interface PatientSearchResult {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  dateOfBirth: string | null;
+  sex: string | null;
+  bloodType: string | null;
+  allergies: string | null;
+  currentMedications: string | null;
+  pastMedicalConditions: string | null;
+  familyMedicalHistory: string | null;
+  profilePictureUrl: string | null;
+  consultationCount: number;
+}
+
+export interface PaginatedPatientSearch {
+  items: PatientSearchResult[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface PatientSearchFilters {
+  q?: string;
+  bloodType?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'unknown';
+  sex?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  minConsultations?: number;
+  page?: number;
+  limit?: number;
+}

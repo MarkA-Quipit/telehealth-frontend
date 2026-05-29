@@ -2,22 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppointments } from '../hooks/useAppointments';
 import { AppointmentDataTable } from '../components/AppointmentDataTable';
+import { FilterTabs } from '../components/FilterTabs';
+import { AppointmentSkeletonTable } from '../components/AppointmentSkeletonTable';
 import type { AppointmentWithDetails } from '../types';
 
 const TABS = ['Upcoming', 'Past'] as const;
 type Tab = typeof TABS[number];
-
-function SkeletonRow() {
-  return (
-    <tr className="animate-pulse">
-      {[...Array(5)].map((_, i) => (
-        <td key={i} className="px-4 py-3">
-          <div className="h-4 bg-neutral-100 rounded w-3/4" />
-        </td>
-      ))}
-    </tr>
-  );
-}
 
 export function AppointmentListPage() {
   const navigate = useNavigate();
@@ -51,40 +41,11 @@ export function AppointmentListPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-neutral-200">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium transition border-b-2 -mb-px ${
-              activeTab === tab
-                ? 'border-sky-400 text-sky-700'
-                : 'border-transparent text-neutral-500 hover:text-neutral-700'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <FilterTabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
 
       {/* Content */}
       {isLoading ? (
-        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-200 bg-neutral-50">
-                {['Doctor', 'Date', 'Time', 'Status', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-neutral-500">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              <SkeletonRow />
-              <SkeletonRow />
-              <SkeletonRow />
-            </tbody>
-          </table>
-        </div>
+        <AppointmentSkeletonTable headers={['Doctor', 'Date', 'Time', 'Status', '']} />
       ) : displayed.length > 0 ? (
         <AppointmentDataTable
           appointments={displayed}
