@@ -16,3 +16,8 @@ export async function getChatHistory(appointmentId: string): Promise<ChatMessage
   const { data } = await api.get(`/api/appointments/${appointmentId}/chat`);
   return data.data;
 }
+
+export async function joinConsultation(appointmentId: string): Promise<{ role: string; joinedAt: string }> {
+  const { data } = await api.patch(`/api/appointments/${appointmentId}/join`);
+  return data.data;
+}

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
-import { sendChatMessage, getChatHistory } from '../api/consultations.api';
+import { sendChatMessage, getChatHistory, joinConsultation } from '../api/consultations.api';
 
 export function useChatHistory(appointmentId: string | undefined) {
   return useQuery({
@@ -17,5 +17,11 @@ export function useSendChatMessage(appointmentId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.appointments.chat(appointmentId) });
     },
+  });
+}
+
+export function useJoinConsultation(appointmentId: string) {
+  return useMutation({
+    mutationFn: () => joinConsultation(appointmentId),
   });
 }

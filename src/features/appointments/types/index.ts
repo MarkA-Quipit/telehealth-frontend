@@ -35,6 +35,8 @@ export interface AppointmentWithDetails extends Appointment {
   cancellationReason: string | null;
   cancelledBy: string | null;
   cancelledAt: string | null;
+  patientJoinedAt: string | null;
+  doctorJoinedAt: string | null;
   patient: AppointmentPatient;
   doctor: AppointmentDoctor;
 }

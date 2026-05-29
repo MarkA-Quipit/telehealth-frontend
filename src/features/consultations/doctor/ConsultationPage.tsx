@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import Pusher from 'pusher-js';
 import { useAppointment } from '@/features/appointments/hooks/useAppointments';
 import { formatDuration } from '@/shared/lib/utils';
 import { ChatPanel } from '../components/ChatPanel';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser } from '@/features/users/hooks/useUser';
 import { JitsiRoom } from '../components/JitsiRoom';
+import { useJoinConsultation } from '../hooks/useConsultations';
 
 export function DoctorConsultationPage() {
   const { appointmentId } = useParams<{ appointmentId: string }>();
@@ -14,8 +16,13 @@ export function DoctorConsultationPage() {
   const { user: authUser } = useAuthContext();
   const { data: fullUser } = useUser(authUser?.id);
   const { data: appointment, isLoading } = useAppointment(appointmentId);
+  const joinMutation = useJoinConsultation(appointmentId ?? '');
   const [panelOpen, setPanelOpen] = useState(true);
   const [quickNote, setQuickNote] = useState('');
+
+  // true once the patient's user_joined event arrives via Pusher
+  const [patientJoined, setPatientJoined] = useState(false);
+  const pusherRef = useRef<Pusher | null>(null);
 
   useEffect(() => {
     if (!appointment || isLoading) return;
@@ -30,8 +37,32 @@ export function DoctorConsultationPage() {
 
     if (!eligible) {
       navigate(`/doctor/appointments/${appointmentId}`);
+      return;
     }
-  }, [appointment, isLoading, appointmentId, navigate]);
+
+    // Pre-populate joined state from appointment data (handles page reload)
+    if (appointment.patientJoinedAt) setPatientJoined(true);
+
+    // Record own join
+    joinMutation.mutate();
+
+    // Subscribe to join events
+    const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY as string, {
+      cluster: import.meta.env.VITE_PUSHER_CLUSTER as string,
+    });
+    pusherRef.current = pusher;
+
+    const channel = pusher.subscribe(`appointment-${appointmentId}`);
+    channel.bind('user_joined', (data: { role: string }) => {
+      if (data.role === 'patient') setPatientJoined(true);
+    });
+
+    return () => {
+      pusher.unsubscribe(`appointment-${appointmentId}`);
+      pusher.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appointment?.id, isLoading]);
 
   if (isLoading || !appointment) {
     return (
@@ -44,6 +75,8 @@ export function DoctorConsultationPage() {
   const displayName = fullUser
     ? `Dr. ${fullUser.firstName} ${fullUser.lastName}`
     : authUser?.email ?? 'Doctor';
+
+  const patientName = `${appointment.patient.firstName} ${appointment.patient.lastName}`;
 
   return (
     <div className="flex h-full">
@@ -82,17 +115,26 @@ export function DoctorConsultationPage() {
         {/* Panel content */}
         {panelOpen && (
           <div className="w-80 bg-white border-l border-neutral-200 p-4 flex flex-col gap-4 overflow-hidden">
-            {/* Patient info */}
+            {/* Patient info + join status */}
             <div>
-              <p className="text-sm font-semibold text-neutral-900">
-                {appointment.patient.firstName} {appointment.patient.lastName}
-              </p>
+              <p className="text-sm font-semibold text-neutral-900">{patientName}</p>
               <p className="text-xs text-neutral-500 mt-0.5">
                 {appointment.reasonForVisit ?? 'No reason provided'}
               </p>
               <span className="mt-1.5 inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 text-xs font-medium">
                 {formatDuration(appointment.durationMinutes)} session
               </span>
+              {/* Join indicator */}
+              <div className="mt-2">
+                {patientJoined ? (
+                  <span className="text-xs text-green-600 font-medium">Patient is in the room ✓</span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-xs text-amber-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    Waiting for patient…
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Quick note */}
@@ -125,7 +167,7 @@ export function DoctorConsultationPage() {
               <ChatPanel
                 appointmentId={appointmentId!}
                 currentUserId={authUser?.id ?? ''}
-                otherPartyName={`${appointment.patient.firstName} ${appointment.patient.lastName}`}
+                otherPartyName={patientName}
               />
             </div>
           </div>
