@@ -65,11 +65,21 @@ export function useNotifications() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all() }),
   });
 
+  // ── deleteNotification mutation ──────────────────────────────────────────
+  const deleteNotificationMutation = useMutation({
+    mutationFn: (id: string) => notificationsApi.deleteNotification(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all() }),
+  });
+
   return {
     notifications: data?.notifications ?? [],
     unreadCount: data?.unreadCount ?? 0,
     isLoading,
     markRead: (id: string) => markReadMutation.mutate(id),
     markAllRead: () => markAllReadMutation.mutate(),
+    deleteNotification: (id: string) => deleteNotificationMutation.mutate(id),
+    isDeleting: deleteNotificationMutation.isPending,
+    deletingId: deleteNotificationMutation.variables,
   };
 }

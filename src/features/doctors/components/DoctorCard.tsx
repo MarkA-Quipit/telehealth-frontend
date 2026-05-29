@@ -98,11 +98,9 @@ export function DoctorCard({ doctor, compact = false }: DoctorCardProps) {
       {/* Fee (left) + consultations count (right) */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium text-neutral-700">{feeDisplay}</span>
-        {doctor.completedConsultationsCount > 0 && (
-          <span className="text-xs text-neutral-500">
-            {doctor.completedConsultationsCount} {doctor.completedConsultationsCount === 1 ? 'consultation' : 'consultations'}
-          </span>
-        )}
+        <span className="text-xs text-neutral-500">
+          {doctor.completedConsultationsCount} {doctor.completedConsultationsCount === 1 ? 'consultation' : 'consultations'}
+        </span>
       </div>
 
       {/* View profile button */}

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Bell } from 'lucide-react';
-import * as Popover from '@radix-ui/react-popover';
+import * as Popover from 'radix-ui/react-popover';
 import { NotificationList } from './NotificationList';
 import { useNotifications } from '../hooks/useNotifications';
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const { notifications, unreadCount, isLoading, markRead, markAllRead } = useNotifications();
+  const { notifications, unreadCount, isLoading, markRead, markAllRead, deleteNotification, deletingId } = useNotifications();
 
   const badgeCount = Math.min(unreadCount, 99);
   const badgeLabel = unreadCount > 99 ? '99+' : String(unreadCount);
@@ -45,6 +45,8 @@ export function NotificationBell() {
             isLoading={isLoading}
             markRead={markRead}
             markAllRead={markAllRead}
+            deleteNotification={deleteNotification}
+            deletingId={deletingId}
             onClose={() => setOpen(false)}
           />
         </Popover.Content>

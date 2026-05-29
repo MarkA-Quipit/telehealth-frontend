@@ -6,6 +6,7 @@ import {
   CalendarX,
   CheckCircle,
   Bell,
+  X,
 } from 'lucide-react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import type { Notification, NotificationType } from '../types';
@@ -63,6 +64,8 @@ interface NotificationListProps {
   isLoading: boolean;
   markRead: (id: string) => void;
   markAllRead: () => void;
+  deleteNotification: (id: string) => void;
+  deletingId?: string;
   onClose?: () => void;
 }
 
@@ -75,6 +78,8 @@ export function NotificationList({
   isLoading,
   markRead,
   markAllRead,
+  deleteNotification,
+  deletingId,
   onClose,
 }: NotificationListProps) {
   const navigate = useNavigate();
@@ -153,6 +158,19 @@ export function NotificationList({
                   <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{n.message}</p>
                   <p className="text-xs text-neutral-400 mt-1">{relativeTime(n.createdAt)}</p>
                 </div>
+
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNotification(n.id);
+                  }}
+                  disabled={deletingId === n.id}
+                  className="shrink-0 p-1 rounded text-neutral-300 hover:text-red-400 hover:bg-red-50 transition disabled:opacity-50"
+                  aria-label="Delete notification"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </button>
             );
           })
