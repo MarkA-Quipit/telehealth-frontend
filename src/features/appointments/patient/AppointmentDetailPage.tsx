@@ -8,6 +8,7 @@ import { submitReview } from '@/features/doctors/api/doctors.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import { formatDateLong, formatTime } from '@/shared/lib/date';
+import { formatDuration } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { AppointmentStatusBadge } from '../components/AppointmentStatusBadge';
 
@@ -286,7 +287,9 @@ export function AppointmentDetailPage() {
           </div>
           <div>
             <p className="text-neutral-500">Duration</p>
-            <p className="text-neutral-800 mt-0.5">{appointment.durationMinutes} minutes</p>
+            <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-2.5 py-0.5 text-xs font-medium">
+              {formatDuration(appointment.durationMinutes)} session
+            </span>
           </div>
         </div>
       </div>

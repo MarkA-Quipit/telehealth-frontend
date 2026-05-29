@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useAppointment } from '@/features/appointments/hooks/useAppointments';
+import { formatDuration } from '@/shared/lib/utils';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser } from '@/features/users/hooks/useUser';
 import { JitsiRoom } from '../components/JitsiRoom';
@@ -88,6 +89,9 @@ export function DoctorConsultationPage() {
               <p className="text-xs text-neutral-500 mt-0.5">
                 {appointment.reasonForVisit ?? 'No reason provided'}
               </p>
+              <span className="mt-1.5 inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 text-xs font-medium">
+                {formatDuration(appointment.durationMinutes)} session
+              </span>
             </div>
 
             {/* Quick note */}

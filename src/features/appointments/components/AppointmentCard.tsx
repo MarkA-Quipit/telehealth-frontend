@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { formatDateWithWeekday, formatTime } from '@/shared/lib/date';
+import { formatDuration } from '@/shared/lib/utils';
 import type { AppointmentWithDetails, AppointmentStatus } from '../types';
 import { AppointmentStatusBadge } from './AppointmentStatusBadge';
 
@@ -50,6 +51,9 @@ export function AppointmentCard({ appointment, role }: Props) {
               {appointment.patient.firstName} {appointment.patient.lastName}
             </p>
           )}
+          <p className="text-xs text-neutral-400 mt-1">
+            {formatDuration(appointment.durationMinutes)} session
+          </p>
         </div>
 
         <div className="flex flex-col items-end gap-2 shrink-0">
