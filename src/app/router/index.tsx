@@ -11,8 +11,9 @@ import { RegisterPage } from '../../features/auth/pages/RegisterPage';
 // Patient — dashboard
 import { PatientDashboardPage } from '../../features/appointments/patient/PatientDashboardPage';
 
-// Patient — profile
-import { PatientProfilePage } from '../../features/users/patient/PatientProfilePage';
+// Profile + Settings pages (shared — role-aware)
+import { ProfilePage } from '../../features/users/settings/ProfilePage';
+import { SettingsPage } from '../../features/users/settings/SettingsPage';
 
 // Patient — doctors
 import { DoctorListPage } from '../../features/doctors/patient/DoctorListPage';
@@ -29,8 +30,7 @@ import { PatientConsultationPage } from '../../features/consultations/patient/Co
 // Doctor — dashboard
 import { DoctorDashboardPage } from '../../features/appointments/doctor/DoctorDashboardPage';
 
-// Doctor — profile
-import { DoctorProfilePage as DoctorSelfEditProfilePage } from '../../features/users/doctor/DoctorProfilePage';
+// (DoctorProfilePage replaced by SettingsPage above)
 
 // Doctor — appointments
 import { DoctorAppointmentListPage } from '../../features/appointments/doctor/DoctorAppointmentListPage';
@@ -127,7 +127,11 @@ export function AppRouter() {
         />
         <Route
           path="/patient/profile"
-          element={<RoleGuard role="patient"><PatientProfilePage /></RoleGuard>}
+          element={<RoleGuard role="patient"><ProfilePage /></RoleGuard>}
+        />
+        <Route
+          path="/patient/settings"
+          element={<RoleGuard role="patient"><SettingsPage /></RoleGuard>}
         />
         <Route
           path="/patient/doctors"
@@ -159,7 +163,11 @@ export function AppRouter() {
         />
         <Route
           path="/doctor/profile"
-          element={<RoleGuard role="doctor"><DoctorSelfEditProfilePage /></RoleGuard>}
+          element={<RoleGuard role="doctor"><ProfilePage /></RoleGuard>}
+        />
+        <Route
+          path="/doctor/settings"
+          element={<RoleGuard role="doctor"><SettingsPage /></RoleGuard>}
         />
         <Route
           path="/doctor/appointments"

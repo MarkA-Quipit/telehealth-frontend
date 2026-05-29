@@ -95,16 +95,6 @@ export function AppSidebar() {
           label: 'Availability',
           icon: Clock,
         },
-        {
-          to: '/doctor/profile',
-          label: 'Profile',
-          icon: User,
-          prefetch: () => queryClient.prefetchQuery({
-            queryKey: QUERY_KEYS.users.detail(userId),
-            queryFn: () => getUser(userId),
-            staleTime: 30_000,
-          }),
-        },
       ]
     : [
         {

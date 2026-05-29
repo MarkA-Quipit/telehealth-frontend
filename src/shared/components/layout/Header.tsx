@@ -1,5 +1,6 @@
 import { DropdownMenu } from 'radix-ui';
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, User, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { useUser } from '../../../features/users/hooks/useUser';
 import { NotificationBell } from '../../../features/notifications/components/NotificationBell';
@@ -9,6 +10,9 @@ import { Avatar } from '../Avatar';
 export function Header() {
   const { user, logout } = useAuth();
   const { data: profile } = useUser(user?.id);
+  const navigate = useNavigate();
+  const profilePath = user?.roles.includes('doctor') ? '/doctor/profile' : '/patient/profile';
+  const settingsPath = user?.roles.includes('doctor') ? '/doctor/settings' : '/patient/settings';
 
   const firstName = profile?.firstName ?? user?.email?.split('@')[0] ?? '';
   const lastName = profile?.lastName ?? '';
@@ -54,6 +58,21 @@ export function Header() {
               <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
                 {user?.email}
               </div>
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+              <DropdownMenu.Item
+                onSelect={() => navigate(profilePath)}
+                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100 outline-none select-none"
+              >
+                <User className="size-4 text-neutral-500" />
+                My Profile
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onSelect={() => navigate(settingsPath)}
+                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100 outline-none select-none"
+              >
+                <Settings className="size-4 text-neutral-500" />
+                Settings
+              </DropdownMenu.Item>
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
               <DropdownMenu.Item
                 onSelect={logout}
