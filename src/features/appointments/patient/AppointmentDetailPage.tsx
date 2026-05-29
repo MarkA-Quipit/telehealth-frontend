@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import { formatDateLong, formatTime } from '@/shared/lib/date';
 import { formatDuration } from '@/shared/lib/utils';
+import api from '@/shared/lib/api';
 import { Button } from '@/shared/ui/button';
 import { AppointmentStatusBadge } from '../components/AppointmentStatusBadge';
 
@@ -215,6 +216,20 @@ export function AppointmentDetailPage() {
     }
   }
 
+  async function handleCalendarDownload() {
+    try {
+      const res = await api.get(`/api/appointments/${id}/calendar`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data as Blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `appointment-${id}.ics`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Failed to download calendar file');
+    }
+  }
+
   function handleRescheduleOpenChange(open: boolean) {
     setRescheduleOpen(open);
     if (!open) {
@@ -279,7 +294,17 @@ export function AppointmentDetailPage() {
 
       {/* Appointment details */}
       <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
-        <h3 className="text-base font-semibold text-neutral-900">Details</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-neutral-900">Details</h3>
+          {isActionable && (
+            <button
+              onClick={handleCalendarDownload}
+              className="text-xs font-medium text-sky-700 hover:text-sky-600 transition"
+            >
+              + Add to Calendar
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
             <p className="text-neutral-500">Reason for visit</p>
