@@ -8,7 +8,7 @@ interface AuthContextValue {
   token: string | null;
   login(dto: LoginDto): Promise<void>;
   register(dto: RegisterDto): Promise<void>;
-  logout(): void;
+  logout(): Promise<void>;
   isLoading: boolean;
 }
 
@@ -39,9 +39,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setIsLoading(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function storeAuth(newToken: string, newUser: AuthUser) {
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
+  function storeAuth(accessToken: string, refreshToken: string, newUser: AuthUser) {
+    localStorage.setItem('token', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+    setToken(accessToken);
     setUser(newUser);
   }
 
@@ -51,18 +52,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(dto: LoginDto) {
     const result = await authApi.login(dto);
-    storeAuth(result.token, result.user);
+    storeAuth(result.accessToken, result.refreshToken, result.user);
     redirectByRole(result.user.roles);
   }
 
   async function register(dto: RegisterDto) {
     const result = await authApi.register(dto);
-    storeAuth(result.token, result.user);
+    storeAuth(result.accessToken, result.refreshToken, result.user);
     redirectByRole(result.user.roles);
   }
 
-  function logout() {
+  async function logout() {
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    if (storedRefreshToken) {
+      try {
+        await authApi.callLogout(storedRefreshToken);
+      } catch {
+        // best-effort revoke — clear locally regardless
+      }
+    }
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     setToken(null);
     setUser(null);
     navigate('/login');

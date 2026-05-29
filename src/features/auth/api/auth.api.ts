@@ -8,7 +8,8 @@ interface AuthEnvelope<T> {
 }
 
 interface AuthData {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   user: AuthUser;
 }
 
@@ -25,4 +26,17 @@ export async function register(dto: RegisterDto): Promise<AuthData> {
 export async function getMe(): Promise<AuthUser> {
   const res = await api.get<AuthEnvelope<AuthUser>>('/api/auth/me');
   return res.data.data;
+}
+
+export async function callRefreshToken(refreshToken: string): Promise<{ accessToken: string }> {
+  const res = await api.post<AuthEnvelope<{ accessToken: string }>>('/api/auth/refresh', { refreshToken });
+  return res.data.data;
+}
+
+export async function callLogout(refreshToken: string): Promise<void> {
+  await api.post('/api/auth/logout', { refreshToken });
+}
+
+export async function logoutAll(): Promise<void> {
+  await api.post('/api/auth/logout-all');
 }

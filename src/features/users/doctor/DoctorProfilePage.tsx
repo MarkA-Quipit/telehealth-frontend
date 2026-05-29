@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser, useUpdateUser, useChangePassword } from '../hooks/useUser';
+import { useLogoutAll } from '@/features/auth/hooks/useAuth';
 import { useDoctor, useUpdateDoctor } from '@/features/doctors/hooks/useDoctors';
 import { ProfileCard } from '../components/ProfileCard';
 import { AvatarUpload } from '../components/AvatarUpload';
@@ -18,6 +19,42 @@ interface FormValues {
   yearsOfExperience: string;
   consultationFee: string;
   licenseNumber: string;
+}
+
+function LogoutAllSection() {
+  const [confirming, setConfirming] = useState(false);
+  const { mutate: doLogoutAll, isPending } = useLogoutAll();
+
+  return (
+    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
+      <div>
+        <h3 className="text-base font-semibold text-neutral-900">Session Management</h3>
+        <p className="text-sm text-neutral-500 mt-0.5">
+          Sign out of all active sessions on every device.
+        </p>
+      </div>
+
+      {confirming ? (
+        <div className="flex items-center gap-3">
+          <Button
+            variant="destructive"
+            onClick={() => doLogoutAll()}
+            disabled={isPending}
+            className="disabled:cursor-not-allowed"
+          >
+            {isPending ? 'Signing out…' : 'Confirm — logout all devices'}
+          </Button>
+          <Button variant="secondary" onClick={() => setConfirming(false)} disabled={isPending}>
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <Button variant="destructive" onClick={() => setConfirming(true)}>
+          Logout from all devices
+        </Button>
+      )}
+    </div>
+  );
 }
 
 function ChangePasswordSection({ userId }: { userId: string }) {
@@ -331,6 +368,9 @@ export function DoctorProfilePage() {
 
       {/* Change Password */}
       <ChangePasswordSection userId={fullUser.id} />
+
+      {/* Logout all devices */}
+      <LogoutAllSection />
     </div>
   );
 }

@@ -3,7 +3,9 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser, useUpdateUser, useChangePassword } from '../hooks/useUser';
-import { usePatient, useUpdatePatient } from '@/features/patients/hooks/usePatient';
+import { useLogoutAll } from '@/features/auth/hooks/useAuth';
+import { usePatient, useUpdatePatient, useDocuments, useUploadDocument } from '@/features/patients/hooks/usePatient';
+import { formatDateUTC } from '@/shared/lib/date';
 import { ProfileCard } from '../components/ProfileCard';
 import { AvatarUpload } from '../components/AvatarUpload';
 import { Button } from '@/shared/ui/button';
@@ -23,6 +25,115 @@ interface FormValues {
   medicalHistory: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
+  insuranceProvider: string;
+  insurancePolicyNumber: string;
+}
+
+function DocumentsSection({ patientId }: { patientId: string }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: documents = [], isLoading } = useDocuments(patientId);
+  const { mutateAsync: doUpload, isPending: uploading } = useUploadDocument(patientId);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await doUpload(file);
+      toast.success('Document uploaded');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  return (
+    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-semibold text-neutral-900">Medical Documents</h3>
+        <Button
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="disabled:cursor-not-allowed"
+        >
+          {uploading ? 'Uploading…' : '+ Upload'}
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-10 rounded-lg bg-neutral-100 animate-pulse" />
+          ))}
+        </div>
+      ) : documents.length === 0 ? (
+        <p className="text-sm text-neutral-500">No documents uploaded yet.</p>
+      ) : (
+        <ul className="space-y-2">
+          {documents.map((doc) => (
+            <li key={doc.id} className="flex items-center justify-between text-sm">
+              <div className="min-w-0">
+                <p className="text-neutral-800 truncate">{doc.fileName}</p>
+                <p className="text-xs text-neutral-400">{formatDateUTC(doc.uploadedAt.split('T')[0])}</p>
+              </div>
+              <a
+                href={doc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 ml-3 text-xs font-medium text-sky-700 hover:text-sky-600 transition"
+              >
+                View →
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function LogoutAllSection() {
+  const [confirming, setConfirming] = useState(false);
+  const { mutate: doLogoutAll, isPending } = useLogoutAll();
+
+  return (
+    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
+      <div>
+        <h3 className="text-base font-semibold text-neutral-900">Session Management</h3>
+        <p className="text-sm text-neutral-500 mt-0.5">
+          Sign out of all active sessions on every device.
+        </p>
+      </div>
+
+      {confirming ? (
+        <div className="flex items-center gap-3">
+          <Button
+            variant="destructive"
+            onClick={() => doLogoutAll()}
+            disabled={isPending}
+            className="disabled:cursor-not-allowed"
+          >
+            {isPending ? 'Signing out…' : 'Confirm — logout all devices'}
+          </Button>
+          <Button variant="secondary" onClick={() => setConfirming(false)} disabled={isPending}>
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <Button variant="destructive" onClick={() => setConfirming(true)}>
+          Logout from all devices
+        </Button>
+      )}
+    </div>
+  );
 }
 
 function ChangePasswordSection({ userId }: { userId: string }) {
@@ -122,6 +233,8 @@ export function PatientProfilePage() {
       medicalHistory: '',
       emergencyContactName: '',
       emergencyContactPhone: '',
+      insuranceProvider: '',
+      insurancePolicyNumber: '',
     },
   });
 
@@ -140,6 +253,8 @@ export function PatientProfilePage() {
         medicalHistory: patient.medicalHistory ?? '',
         emergencyContactName: patient.emergencyContactName ?? '',
         emergencyContactPhone: patient.emergencyContactPhone ?? '',
+        insuranceProvider: patient.insuranceProvider ?? '',
+        insurancePolicyNumber: patient.insurancePolicyNumber ?? '',
       });
     }
   }, [fullUser, patient, reset]);
@@ -162,6 +277,8 @@ export function PatientProfilePage() {
         medicalHistory: values.medicalHistory || undefined,
         emergencyContactName: values.emergencyContactName || undefined,
         emergencyContactPhone: values.emergencyContactPhone || undefined,
+        insuranceProvider: values.insuranceProvider || undefined,
+        insurancePolicyNumber: values.insurancePolicyNumber || undefined,
       };
 
       await Promise.all([
@@ -310,6 +427,25 @@ export function PatientProfilePage() {
               placeholder="Describe any previous conditions, surgeries, or ongoing treatments"
             />
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-neutral-700">Insurance Provider</label>
+              <Input
+                {...register('insuranceProvider')}
+                className="h-10"
+                placeholder="e.g. PhilHealth, Maxicare"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-neutral-700">Policy Number</label>
+              <Input
+                {...register('insurancePolicyNumber')}
+                className="h-10"
+                placeholder="Policy ID or number"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Emergency Contact */}
@@ -353,8 +489,14 @@ export function PatientProfilePage() {
         </Button>
       </form>
 
+      {/* Medical Documents */}
+      {patient && <DocumentsSection patientId={patient.id} />}
+
       {/* Change Password */}
       <ChangePasswordSection userId={fullUser.id} />
+
+      {/* Logout all devices */}
+      <LogoutAllSection />
     </div>
   );
 }
