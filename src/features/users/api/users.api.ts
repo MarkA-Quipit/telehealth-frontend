@@ -11,6 +11,10 @@ export async function updateUser(id: string, dto: UpdateUserDto): Promise<User> 
   return data.data;
 }
 
+export async function changePassword(id: string, dto: { currentPassword: string; newPassword: string }): Promise<void> {
+  await api.post(`/api/users/${id}/change-password`, dto);
+}
+
 export async function uploadAvatar(id: string, file: File): Promise<User> {
   const formData = new FormData();
   formData.append('avatar', file);

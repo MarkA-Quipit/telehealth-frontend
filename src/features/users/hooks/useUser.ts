@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUser, updateUser, uploadAvatar } from '../api/users.api';
+import { getUser, updateUser, uploadAvatar, changePassword } from '../api/users.api';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { UpdateUserDto } from '../types';
 
@@ -19,6 +19,13 @@ export function useUpdateUser() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users.detail(data.id) });
     },
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: ({ id, currentPassword, newPassword }: { id: string; currentPassword: string; newPassword: string }) =>
+      changePassword(id, { currentPassword, newPassword }),
   });
 }
 
