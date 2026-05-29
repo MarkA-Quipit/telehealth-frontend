@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import * as Dialog from '@radix-ui/react-dialog';
-import { useAppointment, useCancelAppointment, useNotes, usePrescriptions } from '../hooks/useAppointments';
-import { useDoctorReviews } from '@/features/doctors/hooks/useDoctors';
+import * as Dialog from 'radix-ui/react-dialog';
+import { useAppointment, useCancelAppointment, useNotes, usePrescriptions, useRescheduleAppointment } from '../hooks/useAppointments';
+import { useDoctorReviews, useAvailableSlots } from '@/features/doctors/hooks/useDoctors';
 import { submitReview } from '@/features/doctors/api/doctors.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
@@ -153,9 +153,16 @@ export function AppointmentDetailPage() {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelOpen, setCancelOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleSlot, setRescheduleSlot] = useState('');
 
   const { data: appointment, isLoading } = useAppointment(id);
   const cancelMutation = useCancelAppointment();
+  const rescheduleMutation = useRescheduleAppointment();
+  const { data: availableSlots = [], isFetching: slotsFetching } = useAvailableSlots(
+    appointment?.doctor.id,
+    rescheduleDate || undefined,
+  );
   const { data: notes } = useNotes(appointment?.status === 'completed' ? id : null);
   const { data: prescriptions } = usePrescriptions(appointment?.status === 'completed' ? id : null);
 
@@ -193,16 +200,25 @@ export function AppointmentDetailPage() {
   }
 
   async function handleReschedule() {
-    if (!id || !appointment) return;
+    if (!id || !rescheduleSlot) return;
     try {
-      await cancelMutation.mutateAsync({
+      const newAppt = await rescheduleMutation.mutateAsync({
         id,
-        dto: { cancellationReason: 'Rescheduled by patient' },
+        dto: { newScheduledAt: rescheduleSlot },
       });
+      toast.success('Appointment rescheduled');
       setRescheduleOpen(false);
-      navigate(`/patient/appointments/book?doctorId=${appointment.doctor.id}`);
+      navigate(`/patient/appointments/${newAppt.id}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to cancel for reschedule');
+      toast.error(err instanceof Error ? err.message : 'Failed to reschedule');
+    }
+  }
+
+  function handleRescheduleOpenChange(open: boolean) {
+    setRescheduleOpen(open);
+    if (!open) {
+      setRescheduleDate('');
+      setRescheduleSlot('');
     }
   }
 
@@ -279,7 +295,7 @@ export function AppointmentDetailPage() {
       {isActionable && (
         <div className="flex gap-3">
           {/* Reschedule */}
-          <Dialog.Root open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+          <Dialog.Root open={rescheduleOpen} onOpenChange={handleRescheduleOpenChange}>
             <Dialog.Trigger asChild>
               <Button variant="secondary" className="flex-1 py-2.5">
                 Reschedule
@@ -291,19 +307,56 @@ export function AppointmentDetailPage() {
                 <Dialog.Title className="text-base font-semibold text-neutral-900">
                   Reschedule Appointment
                 </Dialog.Title>
-                <p className="text-sm text-neutral-600">
-                  Rescheduling will cancel this appointment and take you to book a new time with the same doctor.
-                </p>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-neutral-700">Select a new date</label>
+                  <input
+                    type="date"
+                    value={rescheduleDate}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => { setRescheduleDate(e.target.value); setRescheduleSlot(''); }}
+                    className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                  />
+                </div>
+
+                {rescheduleDate && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-neutral-700">Available slots</p>
+                    {slotsFetching ? (
+                      <p className="text-sm text-neutral-400">Loading slots…</p>
+                    ) : availableSlots.length === 0 ? (
+                      <p className="text-sm text-neutral-500">No available slots on this date.</p>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-2">
+                        {availableSlots.map((slot) => (
+                          <button
+                            key={slot.startTime}
+                            type="button"
+                            onClick={() => setRescheduleSlot(slot.startTime)}
+                            className={`rounded-lg px-2 py-1.5 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
+                              rescheduleSlot === slot.startTime
+                                ? 'bg-sky-100 text-sky-700 ring-1 ring-sky-400'
+                                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                            }`}
+                          >
+                            {new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex gap-3">
                   <Dialog.Close asChild>
                     <Button variant="secondary" className="flex-1">Keep Appointment</Button>
                   </Dialog.Close>
                   <Button
                     onClick={handleReschedule}
-                    disabled={cancelMutation.isPending}
-                    className="flex-1"
+                    disabled={!rescheduleSlot || rescheduleMutation.isPending}
+                    className="flex-1 disabled:cursor-not-allowed"
                   >
-                    {cancelMutation.isPending ? 'Processing…' : 'Confirm Reschedule'}
+                    {rescheduleMutation.isPending ? 'Rescheduling…' : 'Confirm'}
                   </Button>
                 </div>
               </Dialog.Content>

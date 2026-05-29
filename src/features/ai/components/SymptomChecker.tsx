@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { DoctorCard } from '@/features/doctors/components/DoctorCard';
 import { useAIRecommendation } from '../hooks/useAIRecommendation';
 import { Button } from '@/shared/ui/button';
 
 export function SymptomChecker() {
+  const navigate = useNavigate();
   const [symptoms, setSymptoms] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -87,7 +89,18 @@ export function SymptomChecker() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {rec.doctors.map((doctor) => (
-                    <DoctorCard key={doctor.id} doctor={doctor} compact />
+                    <button
+                      key={doctor.id}
+                      type="button"
+                      onClick={() =>
+                        navigate('/patient/appointments/book', {
+                          state: { symptoms, doctorId: doctor.id },
+                        })
+                      }
+                      className="text-left w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-xl"
+                    >
+                      <DoctorCard doctor={doctor} compact />
+                    </button>
                   ))}
                 </div>
               )}

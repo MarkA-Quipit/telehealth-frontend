@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useDoctor } from '@/features/doctors/hooks/useDoctors';
 import { AvailabilityCalendar } from '@/features/doctors/components/AvailabilityCalendar';
@@ -15,13 +15,16 @@ interface SelectedSlot {
 export function BookAppointmentPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const doctorId = searchParams.get('doctorId') ?? '';
+  const location = useLocation();
+  const locationState = location.state as { symptoms?: string; doctorId?: string } | null;
+
+  const doctorId = searchParams.get('doctorId') ?? locationState?.doctorId ?? '';
 
   const { data: doctor, isLoading: isDoctorLoading } = useDoctor(doctorId || null);
   const createAppointment = useCreateAppointment();
 
   const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState(locationState?.symptoms ?? '');
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
