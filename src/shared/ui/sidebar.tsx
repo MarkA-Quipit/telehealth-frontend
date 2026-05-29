@@ -5,9 +5,9 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../lib/utils'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-const SIDEBAR_WIDTH = '16rem'
+const SIDEBAR_WIDTH = '17rem'
 const SIDEBAR_WIDTH_MOBILE = '18rem'
-const SIDEBAR_WIDTH_ICON = '3rem'
+const SIDEBAR_WIDTH_ICON = '4rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ function Sidebar({
       {/* Spacing placeholder so content shifts */}
       <div
         className={cn(
-          'relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-200 ease-linear',
+          'relative w-[var(--sidebar-width)] bg-transparent transition-[width] duration-300 ease-in-out',
           'group-data-[collapsible=offcanvas]:w-0',
           'group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]',
         )}
@@ -175,7 +175,7 @@ function Sidebar({
       {/* Fixed panel */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-10 hidden h-svh w-[var(--sidebar-width)] flex-col bg-sidebar transition-[left,right,width] duration-200 ease-linear md:flex',
+          'fixed inset-y-0 left-0 z-10 hidden h-svh w-[var(--sidebar-width)] flex-col bg-sidebar transition-[left,right,width] duration-300 ease-in-out md:flex',
           'border-r border-sidebar-border',
           'group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]',
           'group-data-[collapsible=icon]:overflow-hidden group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]',
@@ -327,25 +327,25 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
 
 const sidebarMenuButtonVariants = cva(
   [
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none',
-    'ring-sidebar-ring transition-[width,height,padding]',
-    'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-    'focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground',
+    'peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl px-3 text-left text-sm outline-none',
+    'ring-sidebar-ring transition-[width,height,padding,background,color] duration-200 ease-in-out',
+    'hover:bg-neutral-100 hover:text-neutral-900',
+    'focus-visible:ring-2 active:scale-[0.98] active:bg-neutral-100',
     'disabled:pointer-events-none disabled:opacity-50',
-    'data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground',
-    'group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2',
-    '[&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+    'data-[active=true]:bg-sky-50 data-[active=true]:font-semibold data-[active=true]:text-sky-700',
+    'group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto',
+    '[&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0',
   ],
   {
     variants: {
       variant: {
-        default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+        default: 'hover:bg-neutral-100 hover:text-neutral-900',
         outline:
-          'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+          'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-neutral-100 hover:text-neutral-900',
       },
       size: {
-        default: 'h-8 text-sm',
-        sm: 'h-7 text-xs',
+        default: 'h-11 text-sm',
+        sm: 'h-8 text-xs',
         lg: 'h-12 text-sm group-data-[collapsible=icon]:!p-0',
       },
     },
