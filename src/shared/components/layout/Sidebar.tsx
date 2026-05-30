@@ -127,16 +127,6 @@ export function AppSidebar() {
             staleTime: 30_000,
           }),
         },
-        {
-          to: '/patient/profile',
-          label: 'Profile',
-          icon: User,
-          prefetch: () => queryClient.prefetchQuery({
-            queryKey: QUERY_KEYS.users.detail(userId),
-            queryFn: () => getUser(userId),
-            staleTime: 30_000,
-          }),
-        },
       ];
 
   const portalLabel = isDoctor ? 'Doctor Portal' : 'Patient Portal';
