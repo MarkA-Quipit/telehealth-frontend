@@ -27,6 +27,7 @@ import { AppointmentDetailPage } from '../../features/appointments/patient/Appoi
 
 // Patient — consultation
 import { PatientConsultationPage } from '../../features/consultations/patient/ConsultationPage';
+import { ConsultationPreviewPage as PatientConsultationPreviewPage } from '../../features/consultations/patient/ConsultationPreviewPage';
 
 // Doctor — dashboard
 import { DoctorDashboardPage } from '../../features/appointments/doctor/DoctorDashboardPage';
@@ -37,6 +38,7 @@ import { DoctorAppointmentDetailPage } from '../../features/appointments/doctor/
 
 // Doctor — consultation
 import { DoctorConsultationPage } from '../../features/consultations/doctor/ConsultationPage';
+import { ConsultationPreviewPage as DoctorConsultationPreviewPage } from '../../features/consultations/doctor/ConsultationPreviewPage';
 
 // Doctor — availability
 import { DoctorAvailabilityPage } from '../../features/appointments/doctor/DoctorAvailabilityPage';
@@ -122,6 +124,8 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedConsultationLayout />,
         children: [
+          { path: '/doctor/consultation/preview', element: <DoctorConsultationPreviewPage /> },
+          { path: '/patient/consultation/preview', element: <PatientConsultationPreviewPage /> },
           { path: '/patient/consultation/:appointmentId', element: <PatientConsultationPage /> },
           { path: '/doctor/consultation/:appointmentId',  element: <DoctorConsultationPage /> },
         ],

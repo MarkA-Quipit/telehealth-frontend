@@ -10,7 +10,7 @@ export function ConsultationLayout() {
     : `/patient/appointments/${appointmentId ?? ''}`;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white">
       {/* Top bar */}
       <header className="h-14 border-b border-neutral-200 flex items-center justify-between px-4 shrink-0">
         <span className="font-semibold text-sky-700 text-base">TeleHealth</span>
@@ -23,7 +23,7 @@ export function ConsultationLayout() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 overflow-hidden" style={{ height: 'calc(100vh - 3.5rem)' }}>
+      <main className="flex-1 overflow-hidden">
         <Outlet />
       </main>
     </div>
