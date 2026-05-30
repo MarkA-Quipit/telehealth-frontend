@@ -12,9 +12,19 @@ import {
   addPrescription,
   deletePrescription,
   searchPatients,
+  checkBookingLimit,
 } from '../api/appointments.api';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { AppointmentFilters, CreateAppointmentDto, UpdateStatusDto, CancelAppointmentDto, ConsultationNote, PatientSearchFilters } from '../types';
+
+// ── Booking limit ─────────────────────────────────────────────────────────────
+export function useBookingLimitCheck(doctorId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['appointments', 'limit-check', doctorId ?? ''],
+    queryFn: () => checkBookingLimit(doctorId!),
+    enabled: !!doctorId,
+  });
+}
 
 // ── List ──────────────────────────────────────────────────────────────────────
 export function useAppointments(filters?: AppointmentFilters) {

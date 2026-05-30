@@ -1,29 +1,37 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDoctor, useDoctorReviews } from '../hooks/useDoctors';
 import { formatDate } from '@/shared/lib/date';
 import { Avatar } from '@/shared/components/Avatar';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { Pagination } from '@/shared/ui/pagination';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import type { Review } from '../types';
 
+const REVIEWS_PER_PAGE_OPTIONS = [5, 10, 15];
 
 function ProfileSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-20 h-20 rounded-full bg-neutral-200 shrink-0" />
-          <div className="flex-1 space-y-2 pt-1">
-            <div className="h-6 bg-neutral-200 rounded w-1/2" />
-            <div className="h-4 bg-neutral-200 rounded w-1/3" />
-            <div className="h-5 bg-neutral-200 rounded-full w-1/4" />
+    <div className="flex flex-col lg:flex-row gap-6 animate-pulse">
+      <div className="flex-[3] min-w-0 space-y-4">
+        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-20 h-20 rounded-full bg-neutral-200 shrink-0" />
+            <div className="flex-1 space-y-2 pt-1">
+              <div className="h-6 bg-neutral-200 rounded w-1/2" />
+              <div className="h-4 bg-neutral-200 rounded w-1/3" />
+              <div className="h-5 bg-neutral-200 rounded-full w-1/4" />
+            </div>
           </div>
         </div>
+        <div className="h-32 bg-neutral-200 rounded-xl" />
+        <div className="h-16 bg-neutral-200 rounded-xl" />
+        <div className="h-12 bg-neutral-200 rounded-xl" />
       </div>
-      <div className="h-32 bg-neutral-200 rounded-xl" />
-      <div className="h-16 bg-neutral-200 rounded-xl" />
-      <div className="h-12 bg-neutral-200 rounded-xl" />
+      <div className="flex-[2] min-w-0">
+        <div className="h-64 bg-neutral-200 rounded-xl" />
+      </div>
     </div>
   );
 }
@@ -46,12 +54,15 @@ function StarDisplay({ rating }: { rating: number }) {
 
 function ReviewsSection({ doctorId }: { doctorId: string }) {
   const { data: reviews = [], isLoading } = useDoctorReviews(doctorId);
+  const [page, setPage]               = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   if (isLoading) {
     return (
       <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3 animate-pulse">
         <div className="h-5 bg-neutral-200 rounded w-1/4" />
         <div className="h-12 bg-neutral-200 rounded-lg" />
+        <div className="h-20 bg-neutral-200 rounded-lg" />
         <div className="h-20 bg-neutral-200 rounded-lg" />
       </div>
     );
@@ -66,14 +77,22 @@ function ReviewsSection({ doctorId }: { doctorId: string }) {
     );
   }
 
-  const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+  const avg   = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
   const total = reviews.length;
 
-  // Count per star level
   const starCounts = [5, 4, 3, 2, 1].map((star) => ({
     star,
     count: reviews.filter((r) => r.rating === star).length,
   }));
+
+  const totalPages   = Math.max(1, Math.ceil(total / rowsPerPage));
+  const safePage     = Math.min(page, totalPages);
+  const pagedReviews = reviews.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
+
+  function handleRowsPerPageChange(rows: number) {
+    setRowsPerPage(rows);
+    setPage(1);
+  }
 
   return (
     <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-5">
@@ -87,7 +106,6 @@ function ReviewsSection({ doctorId }: { doctorId: string }) {
           <p className="text-xs text-neutral-500 mt-1">{total} {total === 1 ? 'review' : 'reviews'}</p>
         </div>
 
-        {/* Star breakdown bars */}
         <div className="flex-1 space-y-1.5">
           {starCounts.map(({ star, count }) => {
             const pct = total > 0 ? Math.round((count / total) * 100) : 0;
@@ -109,43 +127,49 @@ function ReviewsSection({ doctorId }: { doctorId: string }) {
 
       {/* Review list */}
       <div className="divide-y divide-neutral-100">
-        {reviews.map((review: Review) => {
-          const reviewDate = formatDate(review.createdAt);
-
-          return (
-            <div key={review.id} className="py-4 space-y-1.5">
-              <div className="flex items-center gap-3">
-                <Avatar
-                  firstName={review.patient.firstName}
-                  lastName={review.patient.lastName}
-                  profilePictureUrl={review.patient.profilePictureUrl}
-                  size="xs"
-                />
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">
-                    {review.patient.firstName} {review.patient.lastName}
-                  </p>
-                  <p className="text-xs text-neutral-400">{reviewDate}</p>
-                </div>
-                <div className="ml-auto flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={i < review.rating ? 'text-amber-400' : 'text-neutral-300'}
-                      style={{ fontSize: '0.8rem' }}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
+        {pagedReviews.map((review: Review) => (
+          <div key={review.id} className="py-4 space-y-1.5">
+            <div className="flex items-center gap-3">
+              <Avatar
+                firstName={review.patient.firstName}
+                lastName={review.patient.lastName}
+                profilePictureUrl={review.patient.profilePictureUrl}
+                size="xs"
+              />
+              <div>
+                <p className="text-sm font-medium text-neutral-900">
+                  {review.patient.firstName} {review.patient.lastName}
+                </p>
+                <p className="text-xs text-neutral-400">{formatDate(review.createdAt)}</p>
               </div>
-              {review.comment && (
-                <p className="text-sm text-neutral-600 leading-relaxed pl-11">{review.comment}</p>
-              )}
+              <div className="ml-auto flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={i < review.rating ? 'text-amber-400' : 'text-neutral-300'}
+                    style={{ fontSize: '0.8rem' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
             </div>
-          );
-        })}
+            {review.comment && (
+              <p className="text-sm text-neutral-600 leading-relaxed pl-11">{review.comment}</p>
+            )}
+          </div>
+        ))}
       </div>
+
+      {/* Pagination */}
+      <Pagination
+        page={safePage}
+        totalPages={totalPages}
+        rowsPerPage={rowsPerPage}
+        rowsPerPageOptions={REVIEWS_PER_PAGE_OPTIONS}
+        onPageChange={setPage}
+        onRowsPerPageChange={handleRowsPerPageChange}
+      />
     </div>
   );
 }
@@ -180,7 +204,7 @@ export function DoctorProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Back link — hardcoded to avoid history-stack issues after booking */}
+      {/* Back link — spans full width */}
       <button
         onClick={() => navigate('/patient/doctors')}
         className="text-sm text-sky-600 hover:text-sky-800 font-medium transition flex items-center gap-1"
@@ -191,115 +215,122 @@ export function DoctorProfilePage() {
         Back to Doctors
       </button>
 
-      {/* Hero card */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
-        <div className="flex items-start gap-4">
-          <Avatar
-            firstName={doctor.firstName}
-            lastName={doctor.lastName}
-            profilePictureUrl={doctor.profilePictureUrl}
-            size="xl"
-          />
+      {/* 2-column layout */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">{fullName}</h1>
-            <p className="text-sm text-neutral-500 mt-0.5">{doctor.specialization}</p>
+        {/* Left col — hero, bio, stats, Book CTA */}
+        <div className="flex-[3] min-w-0 space-y-4">
 
-            {/* Star rating — hidden if no reviews */}
-            {doctor.reviewCount > 0 && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <StarDisplay rating={doctor.averageRating ?? 0} />
-                <span className="text-sm font-medium text-neutral-700">
-                  {(doctor.averageRating ?? 0).toFixed(1)}
-                </span>
-                <span className="text-sm text-neutral-500">
-                  · {doctor.reviewCount} {doctor.reviewCount === 1 ? 'review' : 'reviews'}
-                </span>
+          {/* Hero card */}
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
+            <div className="flex items-start gap-4">
+              <Avatar
+                firstName={doctor.firstName}
+                lastName={doctor.lastName}
+                profilePictureUrl={doctor.profilePictureUrl}
+                size="xl"
+              />
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">{fullName}</h1>
+                <p className="text-sm text-neutral-500 mt-0.5">{doctor.specialization}</p>
+
+                {doctor.reviewCount > 0 && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <StarDisplay rating={doctor.averageRating ?? 0} />
+                    <span className="text-sm font-medium text-neutral-700">
+                      {(doctor.averageRating ?? 0).toFixed(1)}
+                    </span>
+                    <span className="text-sm text-neutral-500">
+                      · {doctor.reviewCount} {doctor.reviewCount === 1 ? 'review' : 'reviews'}
+                    </span>
+                  </div>
+                )}
+
+                {doctor.completedConsultationsCount > 0 && (
+                  <p className="text-sm text-neutral-500 mt-0.5">
+                    {doctor.completedConsultationsCount} completed {doctor.completedConsultationsCount === 1 ? 'consultation' : 'consultations'}
+                  </p>
+                )}
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      doctor.isAcceptingPatients
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-neutral-100 text-neutral-500'
+                    }`}
+                  >
+                    {doctor.isAcceptingPatients ? 'Accepting' : 'Not Accepting'}
+                  </span>
+                  {doctor.isVerified && (
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-sky-100 text-sky-700">
+                      Verified
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
-
-            {/* Completed consultations */}
-            {doctor.completedConsultationsCount > 0 && (
-              <p className="text-sm text-neutral-500 mt-0.5">
-                {doctor.completedConsultationsCount} completed {doctor.completedConsultationsCount === 1 ? 'consultation' : 'consultations'}
-              </p>
-            )}
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              <span
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  doctor.isAcceptingPatients
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-neutral-100 text-neutral-500'
-                }`}
-              >
-                {doctor.isAcceptingPatients ? 'Accepting' : 'Not Accepting'}
-              </span>
-              {doctor.isVerified && (
-                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-sky-100 text-sky-700">
-                  Verified
-                </span>
-              )}
             </div>
           </div>
+
+          {/* Bio */}
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
+            <h3 className="text-base font-semibold text-neutral-900 mb-2">About</h3>
+            {doctor.bio ? (
+              <p className="text-sm text-neutral-600 leading-relaxed">{doctor.bio}</p>
+            ) : (
+              <p className="text-sm text-neutral-400 italic">No bio available.</p>
+            )}
+          </div>
+
+          {/* Stats */}
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
+            <h3 className="text-base font-semibold text-neutral-900 mb-3">Details</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-neutral-500">Years of Experience</p>
+                <p className="text-sm font-medium text-neutral-900 mt-0.5">
+                  {doctor.yearsOfExperience != null ? `${doctor.yearsOfExperience} years` : '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500">Consultation Fee</p>
+                <p className="text-sm font-medium text-neutral-900 mt-0.5">
+                  {feeDisplay ? `${feeDisplay} / session` : '—'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Book CTA */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="w-full">
+                  <button
+                    onClick={() => doctor.isAcceptingPatients ? navigate(`/patient/appointments/book?doctorId=${doctor.id}`) : undefined}
+                    disabled={!doctor.isAcceptingPatients}
+                    className={`w-full font-medium rounded-lg px-4 py-3 text-sm transition ${
+                      doctor.isAcceptingPatients
+                        ? 'bg-sky-100 text-sky-700 hover:bg-sky-200'
+                        : 'bg-sky-100 text-sky-700 opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    Book Appointment
+                  </button>
+                </span>
+              </TooltipTrigger>
+              {!doctor.isAcceptingPatients && (
+                <TooltipContent side="top">Currently Not Accepting</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        {/* Right col — reviews */}
+        <div className="flex-[2] min-w-0">
+          <ReviewsSection doctorId={doctor.id} />
         </div>
       </div>
-
-      {/* Bio */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
-        <h3 className="text-base font-semibold text-neutral-900 mb-2">About</h3>
-        {doctor.bio ? (
-          <p className="text-sm text-neutral-600 leading-relaxed">{doctor.bio}</p>
-        ) : (
-          <p className="text-sm text-neutral-400 italic">No bio available.</p>
-        )}
-      </div>
-
-      {/* Stats */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
-        <h3 className="text-base font-semibold text-neutral-900 mb-3">Details</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-neutral-500">Years of Experience</p>
-            <p className="text-sm font-medium text-neutral-900 mt-0.5">
-              {doctor.yearsOfExperience != null ? `${doctor.yearsOfExperience} years` : '—'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-neutral-500">Consultation Fee</p>
-            <p className="text-sm font-medium text-neutral-900 mt-0.5">
-              {feeDisplay ? `${feeDisplay} / session` : '—'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Book CTA */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="w-full">
-              <button
-                onClick={() => doctor.isAcceptingPatients ? navigate(`/patient/appointments/book?doctorId=${doctor.id}`) : undefined}
-                disabled={!doctor.isAcceptingPatients}
-                className={`w-full font-medium rounded-lg px-4 py-3 text-sm transition ${
-                  doctor.isAcceptingPatients
-                    ? 'bg-sky-100 text-sky-700 hover:bg-sky-200'
-                    : 'bg-sky-100 text-sky-700 opacity-50 cursor-not-allowed'
-                }`}
-              >
-                Book Appointment
-              </button>
-            </span>
-          </TooltipTrigger>
-          {!doctor.isAcceptingPatients && (
-            <TooltipContent side="top">Currently Not Accepting</TooltipContent>
-          )}
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* Reviews */}
-      <ReviewsSection doctorId={doctor.id} />
     </div>
   );
 }

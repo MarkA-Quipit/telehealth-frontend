@@ -7,6 +7,7 @@ import { AppointmentSkeletonCard } from '../components/AppointmentSkeletonCard';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/components/EmptyState';
 
+const CAP = 5;
 
 export function PatientDashboardPage() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export function PatientDashboardPage() {
 
   const allItems = appointmentsData?.items ?? [];
 
-  const todayAppointments = allItems
+  const todayAll = allItems
     .filter((a) => {
       const d = new Date(a.scheduledAt);
       return d.toDateString() === todayStr && (a.status === 'pending' || a.status === 'confirmed');
@@ -36,9 +37,10 @@ export function PatientDashboardPage() {
     })
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
-  const upcoming = upcomingAll.slice(0, 3);
+  const todayAppointments = todayAll.slice(0, CAP);
+  const upcoming          = upcomingAll.slice(0, CAP);
 
-  const todayCount     = todayAppointments.length;
+  const todayCount     = todayAll.length;
   const upcomingCount  = upcomingAll.length;
   const completedCount = completedData?.total ?? 0;
 
@@ -75,70 +77,89 @@ export function PatientDashboardPage() {
         </div>
       </div>
 
-      {/* Today's Appointments */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-neutral-900">Today's Appointments</h3>
-          <button
-            onClick={() => navigate('/patient/appointments')}
-            className="text-xs text-sky-700 hover:text-sky-600 font-medium transition"
-          >
-            View all →
-          </button>
+      {/* Today + Upcoming — 2 columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Today's Appointments */}
+        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-neutral-900">Today's Appointments</h3>
+            <button
+              onClick={() => navigate('/patient/appointments')}
+              className="text-xs text-sky-700 hover:text-sky-600 font-medium transition"
+            >
+              View all →
+            </button>
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-3">
+              <AppointmentSkeletonCard />
+              <AppointmentSkeletonCard />
+            </div>
+          ) : todayAppointments.length > 0 ? (
+            <div className="space-y-3">
+              {todayAppointments.map((appt) => (
+                <AppointmentCard key={appt.id} appointment={appt} role="patient" />
+              ))}
+              {todayAll.length > CAP && (
+                <button
+                  onClick={() => navigate('/patient/appointments')}
+                  className="w-full text-xs text-sky-600 hover:text-sky-800 font-medium py-1 transition"
+                >
+                  Show more ({todayAll.length - CAP} more) →
+                </button>
+              )}
+            </div>
+          ) : (
+            <EmptyState
+              padding="sm"
+              icon={calendarIcon}
+              description="No appointments today."
+            />
+          )}
         </div>
 
-        {isLoading ? (
-          <div className="space-y-3">
-            <AppointmentSkeletonCard />
-            <AppointmentSkeletonCard />
+        {/* Upcoming Appointments */}
+        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-neutral-900">Upcoming Appointments</h3>
+            <button
+              onClick={() => navigate('/patient/appointments')}
+              className="text-xs text-sky-700 hover:text-sky-600 font-medium transition"
+            >
+              View all →
+            </button>
           </div>
-        ) : todayAppointments.length > 0 ? (
-          <div className="space-y-3">
-            {todayAppointments.map((appt) => (
-              <AppointmentCard key={appt.id} appointment={appt} role="patient" />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            padding="sm"
-            icon={calendarIcon}
-            description="No appointments today."
-          />
-        )}
-      </div>
 
-      {/* Upcoming Appointments */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-neutral-900">Upcoming Appointments</h3>
-          <button
-            onClick={() => navigate('/patient/appointments')}
-            className="text-xs text-sky-700 hover:text-sky-600 font-medium transition"
-          >
-            View all →
-          </button>
+          {isLoading ? (
+            <div className="space-y-3">
+              <AppointmentSkeletonCard />
+              <AppointmentSkeletonCard />
+              <AppointmentSkeletonCard />
+            </div>
+          ) : upcoming.length > 0 ? (
+            <div className="space-y-3">
+              {upcoming.map((appt) => (
+                <AppointmentCard key={appt.id} appointment={appt} role="patient" />
+              ))}
+              {upcomingAll.length > CAP && (
+                <button
+                  onClick={() => navigate('/patient/appointments')}
+                  className="w-full text-xs text-sky-600 hover:text-sky-800 font-medium py-1 transition"
+                >
+                  Show more ({upcomingAll.length - CAP} more) →
+                </button>
+              )}
+            </div>
+          ) : (
+            <EmptyState
+              padding="sm"
+              icon={calendarIcon}
+              description="No upcoming appointments."
+              action={<Button onClick={() => navigate('/patient/doctors')}>Book an Appointment</Button>}
+            />
+          )}
         </div>
-
-        {isLoading ? (
-          <div className="space-y-3">
-            <AppointmentSkeletonCard />
-            <AppointmentSkeletonCard />
-            <AppointmentSkeletonCard />
-          </div>
-        ) : upcoming.length > 0 ? (
-          <div className="space-y-3">
-            {upcoming.map((appt) => (
-              <AppointmentCard key={appt.id} appointment={appt} role="patient" />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            padding="sm"
-            icon={calendarIcon}
-            description="No upcoming appointments."
-            action={<Button onClick={() => navigate('/patient/doctors')}>Book an Appointment</Button>}
-          />
-        )}
       </div>
     </div>
   );

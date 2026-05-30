@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/shared/components/EmptyState';
 import {
@@ -11,9 +12,6 @@ import {
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import type { Notification, NotificationType } from '../types';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 const TYPE_ICON: Record<NotificationType, React.ElementType> = {
   appointment_booked:    CalendarPlus,
   appointment_confirmed: CalendarCheck,
@@ -39,9 +37,6 @@ function relativeTime(iso: string): string {
   return `${days} day${days > 1 ? 's' : ''} ago`;
 }
 
-// ---------------------------------------------------------------------------
-// Skeleton row
-// ---------------------------------------------------------------------------
 function SkeletonRow() {
   return (
     <div className="flex items-start gap-3 px-3 py-3 animate-pulse">
@@ -55,24 +50,8 @@ function SkeletonRow() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Filter config
-// ---------------------------------------------------------------------------
-const FILTERS: { label: string; value: string | undefined }[] = [
-  { label: 'All', value: undefined },
-  { label: 'Bookings', value: 'appointment_booked' },
-  { label: 'Confirmed', value: 'appointment_confirmed' },
-  { label: 'Cancellations', value: 'appointment_cancelled' },
-  { label: 'Completed', value: 'appointment_completed' },
-];
-
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
 interface NotificationListProps {
-  allItems: Notification[];
-  hasMore: boolean;
-  loadMore: () => void;
+  items: Notification[];
   unreadCount: number;
   isLoading: boolean;
   markRead: (id: string) => void;
@@ -80,17 +59,12 @@ interface NotificationListProps {
   deleteNotification: (id: string) => void;
   deletingId?: string;
   onClose?: () => void;
-  activeType?: string;
-  setActiveType: (type: string | undefined) => void;
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+const DEFAULT_VISIBLE = 3;
+
 export function NotificationList({
-  allItems,
-  hasMore,
-  loadMore,
+  items,
   unreadCount,
   isLoading,
   markRead,
@@ -98,12 +72,14 @@ export function NotificationList({
   deleteNotification,
   deletingId,
   onClose,
-  activeType,
-  setActiveType,
 }: NotificationListProps) {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const isDoctor = user?.roles.includes('doctor') ?? false;
+  const [expanded, setExpanded] = useState(false);
+
+  const displayed = expanded ? items : items.slice(0, DEFAULT_VISIBLE);
+  const hasMore = items.length > DEFAULT_VISIBLE;
 
   function handleRowClick(n: Notification) {
     const appointmentId = n.data?.appointmentId as string | undefined;
@@ -132,32 +108,15 @@ export function NotificationList({
         )}
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 px-2 py-1.5 border-b border-neutral-100 overflow-x-auto">
-        {FILTERS.map((f) => (
-          <button
-            key={f.label}
-            onClick={() => setActiveType(f.value)}
-            className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium transition ${
-              activeType === f.value
-                ? 'bg-sky-100 text-sky-700'
-                : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
       {/* List */}
-      <div className="max-h-[360px] overflow-y-auto">
-        {isLoading && allItems.length === 0 ? (
+      <div className="max-h-[420px] overflow-y-auto">
+        {isLoading && items.length === 0 ? (
           <>
             <SkeletonRow />
             <SkeletonRow />
             <SkeletonRow />
           </>
-        ) : allItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <EmptyState
             padding="md"
             icon={<Bell className="w-6 h-6 text-neutral-400" />}
@@ -165,7 +124,7 @@ export function NotificationList({
           />
         ) : (
           <>
-            {allItems.map((n) => {
+            {displayed.map((n) => {
               const Icon = TYPE_ICON[n.type] ?? Bell;
               const iconColor = TYPE_ICON_COLOR[n.type] ?? 'text-neutral-400';
               const hasAppointment = !!(n.data?.appointmentId);
@@ -178,12 +137,10 @@ export function NotificationList({
                     !n.isRead ? 'border-l-2 border-l-sky-400' : ''
                   } ${hasAppointment ? 'cursor-pointer' : 'cursor-default'}`}
                 >
-                  {/* Icon */}
                   <div className={`mt-0.5 shrink-0 ${iconColor}`}>
                     <Icon className="w-4 h-4" />
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm leading-snug ${
@@ -196,7 +153,6 @@ export function NotificationList({
                     <p className="text-xs text-neutral-400 mt-1">{relativeTime(n.createdAt)}</p>
                   </div>
 
-                  {/* Delete button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -212,15 +168,16 @@ export function NotificationList({
               );
             })}
 
-            {/* Load more */}
+            {/* Show more / Show less */}
             {hasMore && (
               <div className="px-3 py-2 border-t border-neutral-100">
                 <button
-                  onClick={loadMore}
-                  disabled={isLoading}
-                  className="w-full text-xs text-sky-600 hover:text-sky-800 font-medium py-1 transition disabled:opacity-50"
+                  onClick={() => setExpanded((v) => !v)}
+                  className="w-full text-xs text-sky-600 hover:text-sky-800 font-medium py-1 transition"
                 >
-                  {isLoading ? 'Loading…' : 'Load more'}
+                  {expanded
+                    ? 'Show less'
+                    : `Show more (${items.length - DEFAULT_VISIBLE} more)`}
                 </button>
               </div>
             )}

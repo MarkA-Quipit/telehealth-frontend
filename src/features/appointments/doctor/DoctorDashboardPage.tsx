@@ -6,6 +6,8 @@ import { AppointmentCard } from '../components/AppointmentCard';
 import { AppointmentSkeletonCard } from '../components/AppointmentSkeletonCard';
 import { EmptyState } from '@/shared/components/EmptyState';
 
+const CAP = 5;
+
 
 export function DoctorDashboardPage() {
   const navigate = useNavigate();
@@ -30,23 +32,25 @@ export function DoctorDashboardPage() {
 
   const allItems = appointmentsData?.items ?? [];
 
-  const todayAppointments = allItems
+  const todayAll = allItems
     .filter((a) => {
       const d = new Date(a.scheduledAt);
       return d.toDateString() === todayStr && (a.status === 'pending' || a.status === 'confirmed');
     })
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
-  const upcomingAppointments = allItems
+  const upcomingAll = allItems
     .filter((a) => {
       const d = new Date(a.scheduledAt);
       return d.toDateString() !== todayStr && d > now && (a.status === 'pending' || a.status === 'confirmed');
     })
-    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
-    .slice(0, 5);
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
-  const pendingCount   = todayAppointments.filter((a) => a.status === 'pending').length;
-  const confirmedCount = todayAppointments.filter((a) => a.status === 'confirmed').length;
+  const todayAppointments    = todayAll.slice(0, CAP);
+  const upcomingAppointments = upcomingAll.slice(0, CAP);
+
+  const pendingCount   = todayAll.filter((a) => a.status === 'pending').length;
+  const confirmedCount = todayAll.filter((a) => a.status === 'confirmed').length;
   const thisWeekCount  = allItems.filter((a) => {
     const d = new Date(a.scheduledAt);
     return d >= monday && d <= sunday && a.status !== 'cancelled';
@@ -115,6 +119,14 @@ export function DoctorDashboardPage() {
               {todayAppointments.map((appt) => (
                 <AppointmentCard key={appt.id} appointment={appt} role="doctor" />
               ))}
+              {todayAll.length > CAP && (
+                <button
+                  onClick={() => navigate('/doctor/appointments')}
+                  className="w-full text-xs text-sky-600 hover:text-sky-800 font-medium py-1 transition"
+                >
+                  Show more ({todayAll.length - CAP} more) →
+                </button>
+              )}
             </div>
           ) : (
             <EmptyState
@@ -148,6 +160,14 @@ export function DoctorDashboardPage() {
               {upcomingAppointments.map((appt) => (
                 <AppointmentCard key={appt.id} appointment={appt} role="doctor" />
               ))}
+              {upcomingAll.length > CAP && (
+                <button
+                  onClick={() => navigate('/doctor/appointments')}
+                  className="w-full text-xs text-sky-600 hover:text-sky-800 font-medium py-1 transition"
+                >
+                  Show more ({upcomingAll.length - CAP} more) →
+                </button>
+              )}
             </div>
           ) : (
             <EmptyState

@@ -97,6 +97,13 @@ export async function searchPatients(
   return data.data;
 }
 
+export async function checkBookingLimit(
+  doctorId: string,
+): Promise<{ count: number; limit: number; canBook: boolean }> {
+  const { data } = await api.get('/api/appointments/limit-check', { params: { doctorId } });
+  return data.data;
+}
+
 export async function rescheduleAppointment(
   id: string,
   dto: { newScheduledAt: string; durationMinutes?: number },

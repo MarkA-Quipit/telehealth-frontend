@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar } from '@/shared/ui/calendar';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import { getAvailableSlots } from '../api/doctors.api';
+import { useDoctorAvailability } from '../hooks/useDoctors';
 import type { TimeSlot } from '../types';
 
 interface SelectedSlot {
@@ -42,12 +43,42 @@ export function AvailabilityCalendar({ doctorId, selectedSlot, onSlotSelect }: P
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const dateStr = selectedDate ? toDateString(selectedDate) : '';
 
-  const { data: slots, isLoading } = useQuery<TimeSlot[]>({
+  const { data: rawSlots, isLoading } = useQuery<TimeSlot[]>({
     queryKey: QUERY_KEYS.doctors.slots(doctorId, dateStr),
     queryFn: () => getAvailableSlots(doctorId, dateStr),
     enabled: !!dateStr,
     staleTime: 0,
   });
+
+  // Filter out past slots when the selected date is today (compare local HH:MM)
+  const slots = useMemo(() => {
+    if (!rawSlots) return rawSlots;
+    const isToday = dateStr === toDateString(new Date());
+    if (!isToday) return rawSlots;
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    return rawSlots.filter((s) => {
+      const [h, m] = s.startTime.split(':').map(Number);
+      return h * 60 + m > nowMinutes;
+    });
+  }, [rawSlots, dateStr]);
+
+  const { data: availability } = useDoctorAvailability(doctorId);
+
+  // Set of day-of-week numbers (0=Sun…6=Sat) where the doctor is available
+  const activeDays = useMemo(() => {
+    if (!availability) return null; // null = unknown, don't disable anything yet
+    const set = new Set(
+      availability.filter((a) => a.isAvailable).map((a) => a.dayOfWeek),
+    );
+    return set;
+  }, [availability]);
+
+  function isDateDisabled(date: Date): boolean {
+    if (date < today) return true;
+    if (activeDays !== null && !activeDays.has(date.getDay())) return true;
+    return false;
+  }
 
   function handleDateSelect(date: Date | undefined) {
     setSelectedDate(date);
@@ -61,7 +92,7 @@ export function AvailabilityCalendar({ doctorId, selectedSlot, onSlotSelect }: P
           mode="single"
           selected={selectedDate}
           onSelect={handleDateSelect}
-          disabled={{ before: today }}
+          disabled={isDateDisabled}
           className="rounded-xl border border-neutral-200 shadow-sm"
         />
       </div>

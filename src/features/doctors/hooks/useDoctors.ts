@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listDoctors, getDoctorById, updateDoctor, getDoctorReviews, getAvailableSlots } from '../api/doctors.api';
+import { listDoctors, getDoctorById, updateDoctor, getDoctorReviews, getAvailableSlots, getAvailability } from '../api/doctors.api';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import type { DoctorFilters, UpdateDoctorDto } from '../types';
 
@@ -23,6 +23,15 @@ export function useDoctorReviews(doctorId?: string | null) {
     queryKey: QUERY_KEYS.doctors.reviews(doctorId ?? ''),
     queryFn: () => getDoctorReviews(doctorId!),
     enabled: !!doctorId,
+  });
+}
+
+export function useDoctorAvailability(doctorId?: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.doctors.availability(doctorId ?? ''),
+    queryFn: () => getAvailability(doctorId!),
+    enabled: !!doctorId,
+    staleTime: 5 * 60 * 1000, // availability changes infrequently
   });
 }
 
