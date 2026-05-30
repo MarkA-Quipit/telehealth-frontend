@@ -1,9 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useBlocker } from 'react-router-dom';
 import type { Blocker } from 'react-router-dom';
 
-export function useUnsavedChanges(isDirty: boolean): { blocker: Blocker } {
-  const blocker = useBlocker(isDirty);
+export function useUnsavedChanges(isDirty: boolean): { blocker: Blocker; clearDirty: () => void } {
+  const isDirtyRef = useRef(isDirty);
+  isDirtyRef.current = isDirty;
+
+  // Pass a function so React Router reads the ref at navigation time,
+  // allowing clearDirty() to take effect synchronously before navigate().
+  const blocker = useBlocker(() => isDirtyRef.current);
+
+  const clearDirty = useCallback(() => {
+    isDirtyRef.current = false;
+  }, []);
 
   useEffect(() => {
     if (!isDirty) return;
@@ -15,5 +24,5 @@ export function useUnsavedChanges(isDirty: boolean): { blocker: Blocker } {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
 
-  return { blocker };
+  return { blocker, clearDirty };
 }

@@ -30,7 +30,7 @@ export function BookAppointmentPage() {
   const [error, setError] = useState('');
 
   const isDirty = selectedSlot !== null || reason.trim() !== '';
-  const { blocker } = useUnsavedChanges(isDirty);
+  const { blocker, clearDirty } = useUnsavedChanges(isDirty);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,6 +48,7 @@ export function BookAppointmentPage() {
         reasonForVisit: reason.trim() || undefined,
       });
       toast.success('Appointment booked successfully');
+      clearDirty();
       navigate('/patient/appointments');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to book appointment');

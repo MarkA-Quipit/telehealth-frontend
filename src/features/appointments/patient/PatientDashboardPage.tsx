@@ -12,7 +12,7 @@ export function PatientDashboardPage() {
   const navigate = useNavigate();
   const { user: authUser } = useAuthContext();
   const { data: fullUser } = useUser(authUser?.id);
-  const { data: appointmentsData, isLoading } = useAppointments();
+  const { data: appointmentsData, isLoading } = useAppointments({ limit: 100 });
   const { data: completedData } = useAppointments({ status: 'completed', limit: 1 });
 
   const firstName = fullUser?.firstName || authUser?.email?.split('@')[0] || 'there';
@@ -23,7 +23,10 @@ export function PatientDashboardPage() {
   const allItems = appointmentsData?.items ?? [];
 
   const todayAppointments = allItems
-    .filter((a) => new Date(a.scheduledAt).toDateString() === todayStr && a.status !== 'cancelled')
+    .filter((a) => {
+      const d = new Date(a.scheduledAt);
+      return d.toDateString() === todayStr && (a.status === 'pending' || a.status === 'confirmed');
+    })
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
   const upcomingAll = allItems
