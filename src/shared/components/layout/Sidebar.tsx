@@ -1,11 +1,10 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CalendarDays, Stethoscope, Clock, User, Activity } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Stethoscope, Clock, Activity } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { QUERY_KEYS } from '../../constants/queryKeys';
 import { listAppointments } from '../../../features/appointments/api/appointments.api';
 import { listDoctors } from '../../../features/doctors/api/doctors.api';
-import { getUser } from '../../../features/users/api/users.api';
 import {
   Sidebar as SidebarPrimitive,
   SidebarContent,
@@ -65,7 +64,6 @@ function NavItem({ to, label, icon: Icon, prefetch }: NavItemDef) {
 export function AppSidebar() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const userId = user?.id ?? '';
   const isDoctor = user?.roles.includes('doctor') ?? false;
 
   const nav: NavItemDef[] = isDoctor

@@ -14,7 +14,6 @@ export function JitsiRoom({ appointmentId, displayName, email = '', onLeave }: P
     <JitsiMeeting
       domain={domain}
       roomName={appointmentId}
-      style={{ height: '100%', width: '100%' }}
       configOverwrite={{
         startWithAudioMuted: false,
         startWithVideoMuted: false,
