@@ -9,6 +9,7 @@ import { SymptomChecker } from '@/features/ai/components/SymptomChecker';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { Pagination } from '@/shared/ui/pagination';
 
 function CardSkeleton() {
   return (
@@ -35,6 +36,7 @@ export function DoctorListPage() {
   const isPatient = user?.roles.includes('patient') ?? false;
 
   const [filters, setFilters] = useState<DoctorFilters>({ page: 1, limit: 9 });
+  const rowsPerPage = filters.limit ?? 9;
   const { data, isLoading } = useDoctors(filters);
 
   const totalPages = data?.totalPages ?? 1;
@@ -118,28 +120,15 @@ export function DoctorListPage() {
       )}
 
       {/* Pagination */}
-      {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3">
-          <Button
-            variant="secondary"
-            onClick={() => handleFilterChange({ page: currentPage - 1 })}
-            disabled={currentPage <= 1}
-            className="disabled:cursor-not-allowed"
-          >
-            Prev
-          </Button>
-          <span className="text-sm text-neutral-500">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="secondary"
-            onClick={() => handleFilterChange({ page: currentPage + 1 })}
-            disabled={currentPage >= totalPages}
-            className="disabled:cursor-not-allowed"
-          >
-            Next
-          </Button>
-        </div>
+      {!isLoading && totalPages >= 1 && (
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          rowsPerPage={rowsPerPage}
+          rowsPerPageOptions={[9, 18, 27]}
+          onPageChange={(p) => handleFilterChange({ page: p })}
+          onRowsPerPageChange={(limit) => handleFilterChange({ limit, page: 1 })}
+        />
       )}
     </div>
   );

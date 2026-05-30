@@ -7,6 +7,7 @@ import { AppointmentSkeletonTable } from '../components/AppointmentSkeletonTable
 import { Avatar } from '@/shared/components/Avatar';
 import { MedicalPill } from '../components/MedicalPill';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { Pagination } from '@/shared/ui/pagination';
 import type { AppointmentStatus, PatientSearchFilters } from '../types';
 import { Link } from 'react-router-dom';
 
@@ -156,6 +157,8 @@ export function DoctorAppointmentListPage() {
   const [activeTab, setActiveTab] = useState<FilterTab>('All');
   const [datePeriod, setDatePeriod] = useState<DatePeriod>('all');
   const [searchFilters, setSearchFilters] = useState<PatientSearchFilters>({});
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const isSearching =
     (searchFilters.q?.length ?? 0) >= 2 ||
@@ -166,10 +169,25 @@ export function DoctorAppointmentListPage() {
 
   const status = STATUS_MAP[activeTab];
   const dateRange = getDateRange(datePeriod);
-  const { data, isLoading } = useAppointments(
-    status || datePeriod !== 'all' ? { status, ...dateRange } : undefined
-  );
+  const { data, isLoading } = useAppointments({ status, ...dateRange, page, limit: rowsPerPage });
   const items = data?.items ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const currentPage = data?.page ?? page;
+
+  function handleTabChange(tab: FilterTab) {
+    setActiveTab(tab);
+    setPage(1);
+  }
+
+  function handleDatePeriodChange(period: DatePeriod) {
+    setDatePeriod(period);
+    setPage(1);
+  }
+
+  function handleRowsPerPageChange(rows: number) {
+    setRowsPerPage(rows);
+    setPage(1);
+  }
 
   return (
     <div className="space-y-6">
@@ -184,7 +202,7 @@ export function DoctorAppointmentListPage() {
         filters={searchFilters}
         onChange={setSearchFilters}
         datePeriod={datePeriod}
-        onDatePeriodChange={setDatePeriod}
+        onDatePeriodChange={handleDatePeriodChange}
       />
 
       {isSearching ? (
@@ -192,7 +210,7 @@ export function DoctorAppointmentListPage() {
       ) : (
         <>
           {/* Filter tabs */}
-          <FilterTabs tabs={FILTER_TABS} activeTab={activeTab} onChange={setActiveTab} />
+          <FilterTabs tabs={FILTER_TABS} activeTab={activeTab} onChange={handleTabChange} />
 
           {/* Content */}
           {isLoading ? (
@@ -222,12 +240,15 @@ export function DoctorAppointmentListPage() {
           )}
 
           {/* Pagination */}
-          {data && data.totalPages > 1 && (
-            <div className="flex justify-center gap-2 pt-2">
-              <span className="text-sm text-neutral-500">
-                Page {data.page} of {data.totalPages}
-              </span>
-            </div>
+          {!isLoading && (
+            <Pagination
+              page={currentPage}
+              totalPages={totalPages}
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[10, 20, 30]}
+              onPageChange={setPage}
+              onRowsPerPageChange={handleRowsPerPageChange}
+            />
           )}
         </>
       )}

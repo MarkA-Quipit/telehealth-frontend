@@ -6,6 +6,7 @@ import { FilterTabs } from '../components/FilterTabs';
 import { AppointmentSkeletonTable } from '../components/AppointmentSkeletonTable';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { Pagination } from '@/shared/ui/pagination';
 import type { AppointmentWithDetails } from '../types';
 
 const TABS = ['Upcoming', 'Past'] as const;
@@ -14,6 +15,8 @@ type Tab = typeof TABS[number];
 export function AppointmentListPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('Upcoming');
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const { data, isLoading } = useAppointments();
 
   const upcoming: AppointmentWithDetails[] = (data?.items ?? [])
@@ -24,7 +27,20 @@ export function AppointmentListPage() {
     .filter((a) => a.status === 'completed' || a.status === 'cancelled')
     .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
 
-  const displayed = activeTab === 'Upcoming' ? upcoming : past;
+  const allDisplayed = activeTab === 'Upcoming' ? upcoming : past;
+  const totalPages = Math.max(1, Math.ceil(allDisplayed.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const displayed = allDisplayed.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
+
+  function handleTabChange(tab: Tab) {
+    setActiveTab(tab);
+    setPage(1);
+  }
+
+  function handleRowsPerPageChange(rows: number) {
+    setRowsPerPage(rows);
+    setPage(1);
+  }
 
   return (
     <div className="space-y-6">
@@ -40,7 +56,7 @@ export function AppointmentListPage() {
       </div>
 
       {/* Tabs */}
-      <FilterTabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+      <FilterTabs tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
 
       {/* Content */}
       {isLoading ? (
@@ -74,12 +90,15 @@ export function AppointmentListPage() {
       )}
 
       {/* Pagination */}
-      {data && data.totalPages > 1 && (
-        <div className="flex justify-center gap-2 pt-2">
-          <span className="text-sm text-neutral-500">
-            Page {data.page} of {data.totalPages}
-          </span>
-        </div>
+      {!isLoading && (
+        <Pagination
+          page={safePage}
+          totalPages={totalPages}
+          rowsPerPage={rowsPerPage}
+          rowsPerPageOptions={[10, 20, 30]}
+          onPageChange={setPage}
+          onRowsPerPageChange={handleRowsPerPageChange}
+        />
       )}
     </div>
   );
