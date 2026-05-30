@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CalendarDays, Stethoscope, Clock, Activity } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Stethoscope, Clock, HeartPulse } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { QUERY_KEYS } from '../../constants/queryKeys';
@@ -135,10 +135,10 @@ export function AppSidebar() {
         <SidebarHeader className="p-3">
           <div className="flex h-12 items-center gap-3 transition-[gap] duration-200 group-data-[collapsible=icon]:gap-0">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500 text-white shadow-sm">
-              <Activity className="size-5" />
+              <HeartPulse className="size-5" />
             </div>
             <div className="flex flex-col leading-tight overflow-hidden max-w-full transition-[max-width,opacity] duration-200 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0">
-              <span className="text-sm font-semibold text-neutral-900 truncate">Telehealth</span>
+              <span className="text-sm font-semibold text-neutral-900 truncate">VitalLink</span>
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider truncate">
                 {portalLabel}
               </span>

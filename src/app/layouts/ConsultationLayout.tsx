@@ -13,7 +13,7 @@ export function ConsultationLayout() {
     <div className="flex flex-col h-screen bg-white">
       {/* Top bar */}
       <header className="h-14 border-b border-neutral-200 flex items-center justify-between px-4 shrink-0">
-        <span className="font-semibold text-sky-700 text-base">TeleHealth</span>
+        <span className="font-semibold text-sky-700 text-base">VitalLink</span>
         <Link
           to={backPath}
           className="text-sm text-neutral-500 hover:text-neutral-700 transition"

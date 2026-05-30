@@ -11,7 +11,8 @@ export function JitsiRoom({ appointmentId, displayName, email = '', onLeave }: P
   const domain = import.meta.env.VITE_JITSI_DOMAIN ?? 'meet.jit.si';
 
   return (
-    <JitsiMeeting
+    <div className="h-full w-full [&>div]:h-full [&>div]:w-full">
+      <JitsiMeeting
       domain={domain}
       roomName={appointmentId}
       configOverwrite={{
@@ -27,6 +28,7 @@ export function JitsiRoom({ appointmentId, displayName, email = '', onLeave }: P
           node.style.height = '100%';
         }
       }}
-    />
+      />
+    </div>
   );
 }

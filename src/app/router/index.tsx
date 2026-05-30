@@ -5,6 +5,9 @@ import { MainLayout } from '../layouts/MainLayout';
 import { ConsultationLayout } from '../layouts/ConsultationLayout';
 import { useAuthContext } from '../providers/AuthProvider';
 
+// Home
+import { HomePage } from '../../features/home/HomePage';
+
 // Auth
 import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { RegisterPage } from '../../features/auth/pages/RegisterPage';
@@ -116,9 +119,9 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       // Public
+      { path: '/',         element: <HomePage /> },
       { path: '/login',    element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
-      { path: '/',         element: <Navigate to="/login" replace /> },
 
       // Consultation routes (no sidebar, ConsultationLayout)
       {
