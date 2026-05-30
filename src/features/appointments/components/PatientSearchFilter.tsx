@@ -12,12 +12,16 @@ const SEX_OPTIONS: { value: PatientSearchFilters['sex']; label: string }[] = [
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ];
 
+export type DatePeriod = 'all' | 'today' | 'week' | 'month' | 'nextMonth';
+
 interface PatientSearchFilterProps {
   filters: PatientSearchFilters;
   onChange: (filters: PatientSearchFilters) => void;
+  datePeriod?: DatePeriod;
+  onDatePeriodChange?: (period: DatePeriod) => void;
 }
 
-export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterProps) {
+export function PatientSearchFilter({ filters, onChange, datePeriod, onDatePeriodChange }: PatientSearchFilterProps) {
   const [searchInput, setSearchInput] = useState(filters.q ?? '');
   const debouncedSearch = useDebounce(searchInput, 300);
 
@@ -39,9 +43,9 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
   }
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1 flex-1 min-w-[180px]">
+    <div className={`relative bg-white border border-neutral-200 rounded-xl shadow-sm p-4 ${hasActiveFilters ? 'pb-8' : ''}`}>
+      <div className="flex items-end gap-2 overflow-x-auto">
+        <div className="space-y-1 flex-1 min-w-[160px]">
           <label className="text-xs font-medium text-neutral-500">Search</label>
           <Input
             type="text"
@@ -52,7 +56,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
           />
         </div>
 
-        <div className="space-y-1 min-w-[120px]">
+        <div className="space-y-1 min-w-[110px]">
           <label className="text-xs font-medium text-neutral-500">Blood Type</label>
           <Select
             value={filters.bloodType ?? ''}
@@ -72,7 +76,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
           </Select>
         </div>
 
-        <div className="space-y-1 min-w-[150px]">
+        <div className="space-y-1 min-w-[130px]">
           <label className="text-xs font-medium text-neutral-500">Sex</label>
           <Select
             value={filters.sex ?? ''}
@@ -92,7 +96,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
           </Select>
         </div>
 
-        <div className="space-y-1 min-w-[110px]">
+        <div className="space-y-1 min-w-[96px]">
           <label className="text-xs font-medium text-neutral-500">Min Consults</label>
           <Input
             type="number"
@@ -110,7 +114,7 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
           />
         </div>
 
-        <div className="space-y-1 min-w-[110px]">
+        <div className="space-y-1 min-w-[96px]">
           <label className="text-xs font-medium text-neutral-500">Max Consults</label>
           <Input
             type="number"
@@ -128,15 +132,32 @@ export function PatientSearchFilter({ filters, onChange }: PatientSearchFilterPr
           />
         </div>
 
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className="self-end text-sm text-sky-600 hover:text-sky-800 font-medium transition pb-0.5"
-          >
-            Clear filters
-          </button>
+        {onDatePeriodChange && (
+          <div className="space-y-1 min-w-[110px]">
+            <label className="text-xs font-medium text-neutral-500">Period</label>
+            <select
+              value={datePeriod ?? 'all'}
+              onChange={(e) => onDatePeriodChange(e.target.value as DatePeriod)}
+              className="w-full h-9 rounded-lg bg-neutral-100 px-2.5 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+            >
+              <option value="all">All time</option>
+              <option value="today">Today</option>
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+              <option value="nextMonth">Next month</option>
+            </select>
+          </div>
         )}
       </div>
+
+      {hasActiveFilters && (
+        <button
+          onClick={clearFilters}
+          className="absolute bottom-3 right-4 text-xs text-sky-600 hover:text-sky-800 font-medium transition"
+        >
+          Clear filters
+        </button>
+      )}
     </div>
   );
 }

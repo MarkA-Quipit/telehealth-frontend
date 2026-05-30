@@ -46,27 +46,36 @@ export function DoctorListPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Find a Doctor</h1>
-        <p className="text-sm text-neutral-500">
-          Browse and connect with qualified healthcare professionals
-        </p>
-      </div>
-
-      {/* AI Symptom Checker — patients only */}
-      {isPatient && (
+      {/* Header — AI trigger lives here (top-right) for patients */}
+      {isPatient ? (
         <Collapsible defaultOpen={false}>
-          <CollapsibleTrigger asChild>
-            <Button variant="secondary" className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-4 w-4 text-sky-500" />
-              Find doctors by symptoms
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mb-6">
-            <SymptomChecker />
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Find a Doctor</h1>
+              <p className="text-sm text-neutral-500">
+                Browse and connect with qualified healthcare professionals
+              </p>
+            </div>
+            <CollapsibleTrigger asChild>
+              <Button variant="secondary" className="flex items-center gap-2 shrink-0">
+                <Sparkles className="h-4 w-4 text-sky-500" />
+                Find doctors by symptoms
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent>
+            <div className="pt-2">
+              <SymptomChecker />
+            </div>
           </CollapsibleContent>
         </Collapsible>
+      ) : (
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Find a Doctor</h1>
+          <p className="text-sm text-neutral-500">
+            Browse and connect with qualified healthcare professionals
+          </p>
+        </div>
       )}
 
       {/* Filter */}

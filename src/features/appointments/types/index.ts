@@ -94,6 +94,8 @@ export interface AppointmentFilters {
   status?: string;
   page?: number;
   limit?: number;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export interface PatientSearchResult {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAppointments, usePatientSearch } from '../hooks/useAppointments';
 import { AppointmentDataTable } from '../components/AppointmentDataTable';
-import { PatientSearchFilter } from '../components/PatientSearchFilter';
+import { PatientSearchFilter, type DatePeriod } from '../components/PatientSearchFilter';
 import { FilterTabs } from '../components/FilterTabs';
 import { AppointmentSkeletonTable } from '../components/AppointmentSkeletonTable';
 import { Avatar } from '@/shared/components/Avatar';
@@ -20,6 +20,36 @@ const STATUS_MAP: Record<FilterTab, AppointmentStatus | undefined> = {
   Completed: 'completed',
   Cancelled: 'cancelled',
 };
+
+function getDateRange(period: DatePeriod): { dateFrom?: string; dateTo?: string } {
+  if (period === 'all') return {};
+  const now = new Date();
+
+  if (period === 'today') {
+    const start = new Date(now); start.setHours(0, 0, 0, 0);
+    const end   = new Date(now); end.setHours(23, 59, 59, 999);
+    return { dateFrom: start.toISOString(), dateTo: end.toISOString() };
+  }
+  if (period === 'week') {
+    const day = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    return { dateFrom: monday.toISOString(), dateTo: sunday.toISOString() };
+  }
+  if (period === 'month') {
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const last  = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    return { dateFrom: first.toISOString(), dateTo: last.toISOString() };
+  }
+  // nextMonth
+  const first = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const last  = new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59, 999);
+  return { dateFrom: first.toISOString(), dateTo: last.toISOString() };
+}
 
 interface PatientSearchResultsProps {
   filters: PatientSearchFilters;
@@ -124,6 +154,7 @@ function PatientSearchResults({ filters }: PatientSearchResultsProps) {
 
 export function DoctorAppointmentListPage() {
   const [activeTab, setActiveTab] = useState<FilterTab>('All');
+  const [datePeriod, setDatePeriod] = useState<DatePeriod>('all');
   const [searchFilters, setSearchFilters] = useState<PatientSearchFilters>({});
 
   const isSearching =
@@ -134,7 +165,10 @@ export function DoctorAppointmentListPage() {
     searchFilters.maxConsultations != null;
 
   const status = STATUS_MAP[activeTab];
-  const { data, isLoading } = useAppointments(status ? { status } : undefined);
+  const dateRange = getDateRange(datePeriod);
+  const { data, isLoading } = useAppointments(
+    status || datePeriod !== 'all' ? { status, ...dateRange } : undefined
+  );
   const items = data?.items ?? [];
 
   return (
@@ -145,10 +179,12 @@ export function DoctorAppointmentListPage() {
         <p className="text-sm text-neutral-500">Manage your patient consultations</p>
       </div>
 
-      {/* Patient filter panel */}
+      {/* Patient filter panel (includes date period dropdown) */}
       <PatientSearchFilter
         filters={searchFilters}
         onChange={setSearchFilters}
+        datePeriod={datePeriod}
+        onDatePeriodChange={setDatePeriod}
       />
 
       {isSearching ? (

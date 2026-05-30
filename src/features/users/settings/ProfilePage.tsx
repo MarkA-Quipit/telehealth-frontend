@@ -11,8 +11,6 @@ import { PatientMedicalInfoSection } from './sections/PatientMedicalInfoSection'
 import { PatientDocumentsSection } from './sections/PatientDocumentsSection';
 import { DoctorProfessionalInfoSection } from './sections/DoctorProfessionalInfoSection';
 
-type OpenSection = 'personal' | 'professional';
-
 function SkeletonBlock({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-xl bg-neutral-200 ${className ?? ''}`} />;
 }
@@ -37,7 +35,6 @@ function PageSkeleton() {
 }
 
 export function ProfilePage() {
-  const [openSection, setOpenSection] = useState<OpenSection>('professional');
   const [dirtyMap, setDirtyMap] = useState({ personal: false, professional: false, medical: false });
   const isAnyDirty = Object.values(dirtyMap).some(Boolean);
   const { blocker } = useUnsavedChanges(isAnyDirty);
@@ -137,19 +134,11 @@ export function ProfilePage() {
             <>
               <PersonalInfoSection
                 user={fullUser}
-                collapsible={{
-                  isOpen: openSection === 'personal',
-                  onToggle: () => setOpenSection('personal'),
-                }}
                 onDirtyChange={handlePersonalDirtyChange}
               />
               {doctor && (
                 <DoctorProfessionalInfoSection
                   doctor={doctor}
-                  collapsible={{
-                    isOpen: openSection === 'professional',
-                    onToggle: () => setOpenSection('professional'),
-                  }}
                   onDirtyChange={handleProfessionalDirtyChange}
                 />
               )}

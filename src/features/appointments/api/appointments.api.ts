@@ -23,6 +23,8 @@ export async function listAppointments(filters?: AppointmentFilters): Promise<Pa
   if (filters?.status) params.set('status', filters.status);
   if (filters?.page) params.set('page', String(filters.page));
   if (filters?.limit) params.set('limit', String(filters.limit));
+  if (filters?.dateFrom) params.set('dateFrom', filters.dateFrom);
+  if (filters?.dateTo) params.set('dateTo', filters.dateTo);
   const { data } = await api.get(`/api/appointments?${params.toString()}`);
   return data.data;
 }
