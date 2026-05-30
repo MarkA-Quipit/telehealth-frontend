@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
+import { useUnsavedChanges } from '@/shared/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/shared/components/UnsavedChangesDialog';
 import { useUser } from '../hooks/useUser';
 import { FilterTabs } from '@/features/appointments/components/FilterTabs';
 import { ChangePasswordSection } from './sections/ChangePasswordSection';
@@ -24,6 +26,8 @@ function PageSkeleton() {
 
 export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('Security');
+  const [isPasswordDirty, setIsPasswordDirty] = useState(false);
+  const { blocker } = useUnsavedChanges(isPasswordDirty);
   const { user: authUser } = useAuthContext();
   const { data: fullUser, isLoading } = useUser(authUser?.id);
 
@@ -36,25 +40,28 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Settings</h1>
-        <p className="text-sm text-neutral-500">Manage your account security and active sessions</p>
+    <>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Settings</h1>
+          <p className="text-sm text-neutral-500">Manage your account security and active sessions</p>
+        </div>
+
+        <FilterTabs tabs={SETTINGS_TABS} activeTab={activeTab} onChange={setActiveTab} />
+
+        {activeTab === 'Security' && (
+          <div className="space-y-6">
+            <ChangePasswordSection userId={fullUser.id} onDirtyChange={setIsPasswordDirty} />
+          </div>
+        )}
+
+        {activeTab === 'Sessions' && (
+          <div className="space-y-6">
+            <SessionsTabContent />
+          </div>
+        )}
       </div>
-
-      <FilterTabs tabs={SETTINGS_TABS} activeTab={activeTab} onChange={setActiveTab} />
-
-      {activeTab === 'Security' && (
-        <div className="space-y-6">
-          <ChangePasswordSection userId={fullUser.id} />
-        </div>
-      )}
-
-      {activeTab === 'Sessions' && (
-        <div className="space-y-6">
-          <SessionsTabContent />
-        </div>
-      )}
-    </div>
+      <UnsavedChangesDialog blocker={blocker} />
+    </>
   );
 }

@@ -19,11 +19,12 @@ interface ProfessionalFormValues {
 interface DoctorProfessionalInfoSectionProps {
   doctor: DoctorWithUser;
   collapsible?: { isOpen: boolean; onToggle: () => void };
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
-export function DoctorProfessionalInfoSection({ doctor, collapsible }: DoctorProfessionalInfoSectionProps) {
+export function DoctorProfessionalInfoSection({ doctor, collapsible, onDirtyChange }: DoctorProfessionalInfoSectionProps) {
   const { mutateAsync: updateDoctor, isPending } = useUpdateDoctor();
-  const { register, handleSubmit, reset } = useForm<ProfessionalFormValues>({
+  const { register, handleSubmit, reset, formState: { isDirty } } = useForm<ProfessionalFormValues>({
     defaultValues: {
       specialization: doctor.specialization ?? '',
       bio: doctor.bio ?? '',
@@ -43,6 +44,10 @@ export function DoctorProfessionalInfoSection({ doctor, collapsible }: DoctorPro
     });
   }, [doctor, reset]);
 
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
   async function onSubmit(values: ProfessionalFormValues) {
     try {
       await updateDoctor({
@@ -55,6 +60,7 @@ export function DoctorProfessionalInfoSection({ doctor, collapsible }: DoctorPro
           consultationFee: values.consultationFee ? parseInt(values.consultationFee, 10) : undefined,
         },
       });
+      reset(values);
       toast.success('Professional information updated');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save changes');

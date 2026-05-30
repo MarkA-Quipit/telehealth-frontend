@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useUnsavedChanges } from '@/shared/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/shared/components/UnsavedChangesDialog';
 import { toast } from 'sonner';
 import { Loader2, Trash2, CalendarOff } from 'lucide-react';
 import { formatDateUTC } from '@/shared/lib/date';
@@ -55,6 +57,7 @@ export function DoctorAvailabilityPage() {
   const [schedule, setSchedule] = useState<Record<number, DayState>>(() =>
     Object.fromEntries(DAYS.map((d) => [d.index, { ...DEFAULT_DAY }])),
   );
+  const [savedSchedule, setSavedSchedule] = useState<Record<number, DayState> | null>(null);
   const [scheduleLoading, setScheduleLoading] = useState(true);
   const [scheduleSaving, setScheduleSaving] = useState(false);
 
@@ -89,6 +92,7 @@ export function DoctorAvailabilityPage() {
           };
         }
         setSchedule(next);
+        setSavedSchedule(next);
       })
       .catch(() => toast.error('Failed to load schedule'))
       .finally(() => setScheduleLoading(false));
@@ -124,6 +128,7 @@ export function DoctorAvailabilityPage() {
         slotDurationMinutes: schedule[index].slotDurationMinutes,
       }));
       await setAvailability(doctorId, slots);
+      setSavedSchedule({ ...schedule });
       toast.success('Schedule saved');
     } catch {
       toast.error('Failed to save schedule');
@@ -186,8 +191,26 @@ export function DoctorAvailabilityPage() {
     setSchedule((prev) => ({ ...prev, [index]: { ...prev[index], ...patch } }));
   }
 
+  // ── Unsaved changes guard ─────────────────────────────────────────────────
+  const isScheduleDirty =
+    savedSchedule !== null &&
+    DAYS.some(({ index }) => {
+      const s = savedSchedule![index];
+      const c = schedule[index];
+      return (
+        s.isAvailable !== c.isAvailable ||
+        s.startTime !== c.startTime ||
+        s.endTime !== c.endTime ||
+        s.slotDurationMinutes !== c.slotDurationMinutes
+      );
+    });
+  const isBlockedFormDirty =
+    showAddForm && Boolean(newDate || newStart || newEnd || newReason);
+  const { blocker } = useUnsavedChanges(isScheduleDirty || isBlockedFormDirty);
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <>
     <div className="space-y-6">
       {/* Page header */}
       <div>
@@ -482,5 +505,7 @@ export function DoctorAvailabilityPage() {
         )}
       </div>
     </div>
+    <UnsavedChangesDialog blocker={blocker} />
+    </>
   );
 }

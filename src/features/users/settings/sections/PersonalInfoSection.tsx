@@ -17,11 +17,12 @@ interface PersonalFormValues {
 interface PersonalInfoSectionProps {
   user: User;
   collapsible?: { isOpen: boolean; onToggle: () => void };
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
-export function PersonalInfoSection({ user, collapsible }: PersonalInfoSectionProps) {
+export function PersonalInfoSection({ user, collapsible, onDirtyChange }: PersonalInfoSectionProps) {
   const { mutateAsync: updateUser, isPending } = useUpdateUser();
-  const { register, handleSubmit, reset } = useForm<PersonalFormValues>({
+  const { register, handleSubmit, reset, formState: { isDirty } } = useForm<PersonalFormValues>({
     defaultValues: {
       firstName: user.firstName ?? '',
       lastName: user.lastName ?? '',
@@ -37,6 +38,10 @@ export function PersonalInfoSection({ user, collapsible }: PersonalInfoSectionPr
     });
   }, [user, reset]);
 
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
   async function onSubmit(values: PersonalFormValues) {
     try {
       const dto: { firstName?: string; lastName?: string; phone?: string } = {};
@@ -47,6 +52,7 @@ export function PersonalInfoSection({ user, collapsible }: PersonalInfoSectionPr
       if (Object.keys(dto).length > 0) {
         await updateUser({ id: user.id, dto });
       }
+      reset(values);
       toast.success('Personal information updated');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save changes');

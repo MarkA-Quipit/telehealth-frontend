@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
+import { useUnsavedChanges } from '@/shared/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/shared/components/UnsavedChangesDialog';
 import { toast } from 'sonner';
 import { useDoctor } from '@/features/doctors/hooks/useDoctors';
 import { AvailabilityCalendar } from '@/features/doctors/components/AvailabilityCalendar';
@@ -26,6 +28,9 @@ export function BookAppointmentPage() {
   const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
   const [reason, setReason] = useState(locationState?.symptoms ?? '');
   const [error, setError] = useState('');
+
+  const isDirty = selectedSlot !== null || reason.trim() !== '';
+  const { blocker } = useUnsavedChanges(isDirty);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,6 +66,8 @@ export function BookAppointmentPage() {
   }
 
   return (
+    <>
+    <UnsavedChangesDialog blocker={blocker} />
     <div className="space-y-6 max-w-2xl mx-auto">
       {/* Back link */}
       <Link
@@ -161,5 +168,6 @@ export function BookAppointmentPage() {
         </Button>
       </form>
     </div>
+    </>
   );
 }

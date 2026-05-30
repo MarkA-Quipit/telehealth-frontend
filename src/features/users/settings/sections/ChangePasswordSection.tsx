@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useUnsavedChanges } from '@/shared/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/shared/components/UnsavedChangesDialog';
 import { toast } from 'sonner';
 import { useChangePassword } from '../../hooks/useUser';
 import { Button } from '@/shared/ui/button';
@@ -6,13 +8,22 @@ import { Input } from '@/shared/ui/input';
 
 interface ChangePasswordSectionProps {
   userId: string;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
-export function ChangePasswordSection({ userId }: ChangePasswordSectionProps) {
+export function ChangePasswordSection({ userId, onDirtyChange }: ChangePasswordSectionProps) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const { mutateAsync: doChangePassword, isPending } = useChangePassword();
+
+  const isDirty = currentPassword !== '' || newPassword !== '';
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  const { blocker } = useUnsavedChanges(isDirty);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +39,8 @@ export function ChangePasswordSection({ userId }: ChangePasswordSectionProps) {
   }
 
   return (
+    <>
+    <UnsavedChangesDialog blocker={blocker} />
     <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-4">
       <h3 className="text-base font-semibold text-neutral-900">Change Password</h3>
 
@@ -62,5 +75,6 @@ export function ChangePasswordSection({ userId }: ChangePasswordSectionProps) {
         {isPending ? 'Updating…' : 'Change Password'}
       </Button>
     </form>
+    </>
   );
 }

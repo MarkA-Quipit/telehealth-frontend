@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
+import { useUnsavedChanges } from '@/shared/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/shared/components/UnsavedChangesDialog';
 import { useUser } from '../hooks/useUser';
 import { usePatient } from '@/features/patients/hooks/usePatient';
 import { useDoctor, useUpdateDoctor } from '@/features/doctors/hooks/useDoctors';
@@ -36,6 +38,25 @@ function PageSkeleton() {
 
 export function ProfilePage() {
   const [openSection, setOpenSection] = useState<OpenSection>('professional');
+  const [dirtyMap, setDirtyMap] = useState({ personal: false, professional: false, medical: false });
+  const isAnyDirty = Object.values(dirtyMap).some(Boolean);
+  const { blocker } = useUnsavedChanges(isAnyDirty);
+
+  // Each callback is individually memoized so its reference is stable across renders.
+  // Calling handleDirtyChange('key') inline in JSX would create a new function every
+  // render, causing the child useEffect([isDirty, onDirtyChange]) to loop infinitely.
+  const handlePersonalDirtyChange = useCallback(
+    (isDirty: boolean) => setDirtyMap((prev) => ({ ...prev, personal: isDirty })),
+    [],
+  );
+  const handleProfessionalDirtyChange = useCallback(
+    (isDirty: boolean) => setDirtyMap((prev) => ({ ...prev, professional: isDirty })),
+    [],
+  );
+  const handleMedicalDirtyChange = useCallback(
+    (isDirty: boolean) => setDirtyMap((prev) => ({ ...prev, medical: isDirty })),
+    [],
+  );
 
   const { user: authUser } = useAuthContext();
   const { data: fullUser, isLoading: userLoading } = useUser(authUser?.id);
@@ -61,6 +82,7 @@ export function ProfilePage() {
   }
 
   return (
+    <>
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">My Profile</h1>
@@ -119,6 +141,7 @@ export function ProfilePage() {
                   isOpen: openSection === 'personal',
                   onToggle: () => setOpenSection('personal'),
                 }}
+                onDirtyChange={handlePersonalDirtyChange}
               />
               {doctor && (
                 <DoctorProfessionalInfoSection
@@ -127,18 +150,29 @@ export function ProfilePage() {
                     isOpen: openSection === 'professional',
                     onToggle: () => setOpenSection('professional'),
                   }}
+                  onDirtyChange={handleProfessionalDirtyChange}
                 />
               )}
             </>
           ) : (
             <>
-              <PersonalInfoSection user={fullUser} />
-              {patient && <PatientMedicalInfoSection patient={patient} />}
+              <PersonalInfoSection
+                user={fullUser}
+                onDirtyChange={handlePersonalDirtyChange}
+              />
+              {patient && (
+                <PatientMedicalInfoSection
+                  patient={patient}
+                  onDirtyChange={handleMedicalDirtyChange}
+                />
+              )}
               {patient && <PatientDocumentsSection patientId={patient.id} />}
             </>
           )}
         </div>
       </div>
     </div>
+    <UnsavedChangesDialog blocker={blocker} />
+    </>
   );
 }

@@ -76,7 +76,7 @@ export function AppSidebar() {
           icon: LayoutDashboard,
           prefetch: () => queryClient.prefetchQuery({
             queryKey: QUERY_KEYS.appointments.all(),
-            queryFn: listAppointments,
+            queryFn: () => listAppointments(),
             staleTime: 30_000,
           }),
         },
@@ -86,7 +86,7 @@ export function AppSidebar() {
           icon: CalendarDays,
           prefetch: () => queryClient.prefetchQuery({
             queryKey: QUERY_KEYS.appointments.all(),
-            queryFn: listAppointments,
+            queryFn: () => listAppointments(),
             staleTime: 30_000,
           }),
         },
@@ -103,7 +103,7 @@ export function AppSidebar() {
           icon: LayoutDashboard,
           prefetch: () => queryClient.prefetchQuery({
             queryKey: QUERY_KEYS.appointments.all(),
-            queryFn: listAppointments,
+            queryFn: () => listAppointments(),
             staleTime: 30_000,
           }),
         },
@@ -123,7 +123,7 @@ export function AppSidebar() {
           icon: CalendarDays,
           prefetch: () => queryClient.prefetchQuery({
             queryKey: QUERY_KEYS.appointments.all(),
-            queryFn: listAppointments,
+            queryFn: () => listAppointments(),
             staleTime: 30_000,
           }),
         },

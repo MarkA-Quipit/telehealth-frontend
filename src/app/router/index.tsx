@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthContext } from '../providers/AuthProvider';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { AuthProvider } from '../providers/AuthProvider';
 import { MainLayout } from '../layouts/MainLayout';
 import { ConsultationLayout } from '../layouts/ConsultationLayout';
+import { useAuthContext } from '../providers/AuthProvider';
 
 // Auth
 import { LoginPage } from '../../features/auth/pages/LoginPage';
@@ -30,8 +31,6 @@ import { PatientConsultationPage } from '../../features/consultations/patient/Co
 // Doctor — dashboard
 import { DoctorDashboardPage } from '../../features/appointments/doctor/DoctorDashboardPage';
 
-// (DoctorProfilePage replaced by SettingsPage above)
-
 // Doctor — appointments
 import { DoctorAppointmentListPage } from '../../features/appointments/doctor/DoctorAppointmentListPage';
 import { DoctorAppointmentDetailPage } from '../../features/appointments/doctor/DoctorAppointmentDetailPage';
@@ -44,6 +43,18 @@ import { DoctorAvailabilityPage } from '../../features/appointments/doctor/Docto
 
 // Doctor — patient history
 import { PatientMedicalHistoryPage } from '../../features/users/doctor/PatientMedicalHistoryPage';
+
+// ---------------------------------------------------------------------------
+// RootLayout — provides AuthProvider to all routes (useNavigate requires
+// being inside a router, so AuthProvider lives here, not in App.tsx)
+// ---------------------------------------------------------------------------
+function RootLayout() {
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // ProtectedLayout — guards + renders MainLayout (Outlet receives each page)
@@ -94,98 +105,55 @@ function RoleDashboardRedirect() {
 }
 
 // ---------------------------------------------------------------------------
-// AppRouter
+// Data router — required for useBlocker and other data router APIs
 // ---------------------------------------------------------------------------
-export function AppRouter() {
-  return (
-    <Routes>
-      {/* Public */}
-      <Route path="/login"    element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/"         element={<Navigate to="/login" replace />} />
+export const router = createBrowserRouter([
+  {
+    // RootLayout renders AuthProvider so all child routes have auth context
+    // and useNavigate works inside AuthProvider
+    element: <RootLayout />,
+    children: [
+      // Public
+      { path: '/login',    element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+      { path: '/',         element: <Navigate to="/login" replace /> },
 
-      {/* ── Consultation routes (no sidebar, ConsultationLayout) ──────────── */}
-      <Route element={<ProtectedConsultationLayout />}>
-        <Route
-          path="/patient/consultation/:appointmentId"
-          element={<PatientConsultationPage />}
-        />
-        <Route
-          path="/doctor/consultation/:appointmentId"
-          element={<DoctorConsultationPage />}
-        />
-      </Route>
+      // Consultation routes (no sidebar, ConsultationLayout)
+      {
+        element: <ProtectedConsultationLayout />,
+        children: [
+          { path: '/patient/consultation/:appointmentId', element: <PatientConsultationPage /> },
+          { path: '/doctor/consultation/:appointmentId',  element: <DoctorConsultationPage /> },
+        ],
+      },
 
-      {/* ── Authenticated — wrapped in MainLayout via Outlet ─────────────── */}
-      <Route element={<ProtectedLayout />}>
-        <Route path="/dashboard" element={<RoleDashboardRedirect />} />
+      // Authenticated — wrapped in MainLayout via Outlet
+      {
+        element: <ProtectedLayout />,
+        children: [
+          { path: '/dashboard', element: <RoleDashboardRedirect /> },
 
-        {/* ── Patient routes ─────────────────────────────────────────────── */}
-        <Route
-          path="/patient/dashboard"
-          element={<RoleGuard role="patient"><PatientDashboardPage /></RoleGuard>}
-        />
-        <Route
-          path="/patient/profile"
-          element={<RoleGuard role="patient"><ProfilePage /></RoleGuard>}
-        />
-        <Route
-          path="/patient/settings"
-          element={<RoleGuard role="patient"><SettingsPage /></RoleGuard>}
-        />
-        <Route
-          path="/patient/doctors"
-          element={<RoleGuard role="patient"><DoctorListPage /></RoleGuard>}
-        />
-        <Route
-          path="/patient/doctors/:id"
-          element={<RoleGuard role="patient"><PatientDoctorProfilePage /></RoleGuard>}
-        />
+          // Patient routes
+          { path: '/patient/dashboard',          element: <RoleGuard role="patient"><PatientDashboardPage /></RoleGuard> },
+          { path: '/patient/profile',            element: <RoleGuard role="patient"><ProfilePage /></RoleGuard> },
+          { path: '/patient/settings',           element: <RoleGuard role="patient"><SettingsPage /></RoleGuard> },
+          { path: '/patient/doctors',            element: <RoleGuard role="patient"><DoctorListPage /></RoleGuard> },
+          { path: '/patient/doctors/:id',        element: <RoleGuard role="patient"><PatientDoctorProfilePage /></RoleGuard> },
+          // /book MUST come before /:id
+          { path: '/patient/appointments/book',  element: <RoleGuard role="patient"><BookAppointmentPage /></RoleGuard> },
+          { path: '/patient/appointments',       element: <RoleGuard role="patient"><AppointmentListPage /></RoleGuard> },
+          { path: '/patient/appointments/:id',   element: <RoleGuard role="patient"><AppointmentDetailPage /></RoleGuard> },
 
-        {/* Appointment routes — /book MUST come before /:id */}
-        <Route
-          path="/patient/appointments/book"
-          element={<RoleGuard role="patient"><BookAppointmentPage /></RoleGuard>}
-        />
-        <Route
-          path="/patient/appointments"
-          element={<RoleGuard role="patient"><AppointmentListPage /></RoleGuard>}
-        />
-        <Route
-          path="/patient/appointments/:id"
-          element={<RoleGuard role="patient"><AppointmentDetailPage /></RoleGuard>}
-        />
-
-        {/* ── Doctor routes ──────────────────────────────────────────────── */}
-        <Route
-          path="/doctor/dashboard"
-          element={<RoleGuard role="doctor"><DoctorDashboardPage /></RoleGuard>}
-        />
-        <Route
-          path="/doctor/profile"
-          element={<RoleGuard role="doctor"><ProfilePage /></RoleGuard>}
-        />
-        <Route
-          path="/doctor/settings"
-          element={<RoleGuard role="doctor"><SettingsPage /></RoleGuard>}
-        />
-        <Route
-          path="/doctor/appointments"
-          element={<RoleGuard role="doctor"><DoctorAppointmentListPage /></RoleGuard>}
-        />
-        <Route
-          path="/doctor/appointments/:id"
-          element={<RoleGuard role="doctor"><DoctorAppointmentDetailPage /></RoleGuard>}
-        />
-        <Route
-          path="/doctor/availability"
-          element={<RoleGuard role="doctor"><DoctorAvailabilityPage /></RoleGuard>}
-        />
-        <Route
-          path="/doctor/patients/:patientId"
-          element={<RoleGuard role="doctor"><PatientMedicalHistoryPage /></RoleGuard>}
-        />
-      </Route>
-    </Routes>
-  );
-}
+          // Doctor routes
+          { path: '/doctor/dashboard',           element: <RoleGuard role="doctor"><DoctorDashboardPage /></RoleGuard> },
+          { path: '/doctor/profile',             element: <RoleGuard role="doctor"><ProfilePage /></RoleGuard> },
+          { path: '/doctor/settings',            element: <RoleGuard role="doctor"><SettingsPage /></RoleGuard> },
+          { path: '/doctor/appointments',        element: <RoleGuard role="doctor"><DoctorAppointmentListPage /></RoleGuard> },
+          { path: '/doctor/appointments/:id',    element: <RoleGuard role="doctor"><DoctorAppointmentDetailPage /></RoleGuard> },
+          { path: '/doctor/availability',        element: <RoleGuard role="doctor"><DoctorAvailabilityPage /></RoleGuard> },
+          { path: '/doctor/patients/:patientId', element: <RoleGuard role="doctor"><PatientMedicalHistoryPage /></RoleGuard> },
+        ],
+      },
+    ],
+  },
+]);

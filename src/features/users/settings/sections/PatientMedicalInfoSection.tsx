@@ -23,11 +23,12 @@ interface MedicalFormValues {
 
 interface PatientMedicalInfoSectionProps {
   patient: Patient;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
-export function PatientMedicalInfoSection({ patient }: PatientMedicalInfoSectionProps) {
+export function PatientMedicalInfoSection({ patient, onDirtyChange }: PatientMedicalInfoSectionProps) {
   const { mutateAsync: updatePatient, isPending } = useUpdatePatient();
-  const { register, handleSubmit, reset } = useForm<MedicalFormValues>({
+  const { register, handleSubmit, reset, formState: { isDirty } } = useForm<MedicalFormValues>({
     defaultValues: {
       dateOfBirth: patient.dateOfBirth ?? '',
       bloodType: patient.bloodType ?? '',
@@ -57,6 +58,10 @@ export function PatientMedicalInfoSection({ patient }: PatientMedicalInfoSection
     });
   }, [patient, reset]);
 
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
   async function onSubmit(values: MedicalFormValues) {
     try {
       await updatePatient({
@@ -74,6 +79,7 @@ export function PatientMedicalInfoSection({ patient }: PatientMedicalInfoSection
           insurancePolicyNumber: values.insurancePolicyNumber || undefined,
         },
       });
+      reset(values);
       toast.success('Medical information updated');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save changes');

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog } from 'radix-ui';
+import { useUnsavedChanges } from '@/shared/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/shared/components/UnsavedChangesDialog';
 import { useAppointment, useUpdateStatus, useCancelAppointment, useNotes, useSaveNotes, usePrescriptions, useAddPrescription, useDeletePrescription } from '../hooks/useAppointments';
 import { usePatient } from '@/features/patients/hooks/usePatient';
 import { formatDateLong, formatTime } from '@/shared/lib/date';
@@ -66,6 +68,17 @@ export function DoctorAppointmentDetailPage() {
     duration: '',
     instructions: '',
   });
+
+  const isNotesDirty = notes
+    ? noteForm.chiefComplaint !== (notes.chiefComplaint ?? '')
+      || noteForm.diagnosis !== (notes.diagnosis ?? '')
+      || noteForm.notes !== (notes.notes ?? '')
+      || noteForm.followUpDate !== (notes.followUpDate ?? '')
+    : Boolean(noteForm.chiefComplaint || noteForm.diagnosis || noteForm.notes);
+  const isRxDirty = Boolean(
+    rxForm.medicationName || rxForm.dosage || rxForm.frequency || rxForm.duration || rxForm.instructions,
+  );
+  const { blocker } = useUnsavedChanges(isNotesDirty || isRxDirty);
 
   if (isLoading) return <SkeletonPage />;
   if (!appointment) {
@@ -430,6 +443,7 @@ export function DoctorAppointmentDetailPage() {
           <p className="text-sm text-neutral-500">No prescriptions added yet</p>
         )}
       </div>
+      <UnsavedChangesDialog blocker={blocker} />
     </div>
   );
 }

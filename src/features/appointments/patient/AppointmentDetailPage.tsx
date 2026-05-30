@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useUnsavedChanges } from '@/shared/hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/shared/components/UnsavedChangesDialog';
 import { toast } from 'sonner';
 import { Dialog } from 'radix-ui';
 import { useAppointment, useCancelAppointment, useNotes, usePrescriptions, useRescheduleAppointment } from '../hooks/useAppointments';
@@ -72,6 +74,8 @@ function LeaveReviewSection({
     existing ? { rating: existing.rating, comment: existing.comment } : null,
   );
 
+  const { blocker } = useUnsavedChanges((rating > 0 || comment.trim() !== '') && !submitted);
+
   if (submitted) {
     return (
       <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-2">
@@ -142,6 +146,7 @@ function LeaveReviewSection({
       <Button onClick={handleSubmit} disabled={submitting || !rating} className="disabled:cursor-not-allowed">
         {submitting ? 'Submitting…' : 'Submit Review'}
       </Button>
+      <UnsavedChangesDialog blocker={blocker} />
     </div>
   );
 }

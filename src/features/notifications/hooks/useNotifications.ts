@@ -4,7 +4,12 @@ import Pusher from 'pusher-js';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { QUERY_KEYS } from '@/shared/constants/queryKeys';
 import * as notificationsApi from '../api/notifications.api';
-import type { NotificationType } from '../types';
+import type { Notification, NotificationType } from '../types';
+
+// Stable empty-array fallback — avoids a new reference on every render when
+// data is undefined (loading), which would otherwise cause useEffect loops in
+// consumers that list `items` as a dependency.
+const EMPTY_ITEMS: Notification[] = [];
 
 // ---------------------------------------------------------------------------
 // Pusher client — instantiated once at module level, never inside a hook render
@@ -75,7 +80,7 @@ export function useNotifications(type?: string, page = 1) {
 
   return {
     data,
-    items: data?.items ?? [],
+    items: data?.items ?? EMPTY_ITEMS,
     total: data?.total ?? 0,
     unreadCount: data?.unreadCount ?? 0,
     isLoading,
