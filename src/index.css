@@ -203,3 +203,45 @@
   .reveal, .reveal.visible { transition: none; opacity: 1; transform: none; }
   .animate-float { animation: none; }
 }
+
+/* ── Hero mesh gradient (landing page only) ── */
+.hero-mesh-bg {
+  background:
+    radial-gradient(ellipse at 15% 25%, rgba(56,189,248,0.22) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 10%, rgba(110,231,183,0.18) 0%, transparent 48%),
+    radial-gradient(ellipse at 60% 75%, rgba(56,189,248,0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 5%  80%, rgba(110,231,183,0.12) 0%, transparent 50%),
+    #ffffff;
+}
+
+/* ── 3-D card flip (How It Works section) ── */
+.flip-card { perspective: 1200px; }
+.flip-card-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.65s ease;
+}
+.flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-front,
+.flip-card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-card-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+/* Glow per step */
+.flip-card-sky:hover     .flip-card-inner { box-shadow: 0 0 40px rgba(56,189,248,0.45),  0 0 80px rgba(56,189,248,0.20); }
+.flip-card-emerald:hover .flip-card-inner { box-shadow: 0 0 40px rgba(110,231,183,0.45), 0 0 80px rgba(110,231,183,0.20); }
+.flip-card-violet:hover  .flip-card-inner { box-shadow: 0 0 40px rgba(167,139,250,0.45), 0 0 80px rgba(167,139,250,0.20); }
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card:hover .flip-card-inner { transform: none; }
+  .flip-card-sky:hover .flip-card-inner,
+  .flip-card-emerald:hover .flip-card-inner,
+  .flip-card-violet:hover .flip-card-inner { box-shadow: none; }
+}

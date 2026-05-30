@@ -87,13 +87,7 @@ function HeroSection() {
   const statsRef = useReveal();
 
   return (
-    <section className="relative overflow-hidden py-28 px-6">
-      {/* Gradient mesh blobs */}
-      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
-        <div className="absolute left-[5%] top-[15%] h-80 w-80 rounded-full bg-sky-100 opacity-60 blur-3xl" />
-        <div className="absolute right-[10%] top-[5%] h-72 w-72 rounded-full bg-emerald-100 opacity-50 blur-3xl animate-float" />
-        <div className="absolute left-[35%] bottom-[5%] h-56 w-[28rem] rounded-full bg-sky-50 opacity-70 blur-2xl" />
-      </div>
+    <section className="hero-mesh-bg relative overflow-hidden py-28 px-6">
 
       {/* Headline block — staggered via .hero-content */}
       <div className="hero-content max-w-3xl mx-auto text-center space-y-5">
@@ -145,51 +139,67 @@ function FeaturesSection() {
   const ref = useReveal();
 
   return (
-    <section className="py-20 px-6 bg-slate-50">
-      <div className="max-w-5xl mx-auto space-y-10">
+    <section className="py-20 px-6 relative overflow-hidden">
+      {/* Photo placeholder background */}
+      <div className="absolute inset-0 bg-slate-900" aria-hidden>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+          <div className="absolute inset-0" aria-hidden>
+            <img src="/images/features-bg.jpg" alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-slate-900/65" />
+          </div>
+        </div>
+        {/* Overlay keeps text readable once real photo is dropped in */}
+        <div className="absolute inset-0 bg-slate-900/65" />
+      </div>
+
+      {/* Content */}
+      <div className="relative max-w-5xl mx-auto space-y-10">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight text-slate-800">
+          <h2 className="text-3xl font-semibold tracking-tight text-white">
             Everything you need, in one place
           </h2>
-          <p className="text-slate-500">Built for patients and providers who value their time.</p>
+          <p className="text-slate-300">Built for patients and providers who value their time.</p>
         </div>
 
-        {/* Bento: large card left + two stacked cards right */}
+        {/* Bento: large card left + two stacked cards right — all glassmorphic */}
         <div ref={ref} className="reveal grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Large card */}
-          <div className="md:row-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm p-8 flex flex-col gap-8 hover:shadow-md transition-shadow duration-200">
-            <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-sky-50">
-              <Search className="size-7 text-sky-500" />
+          <div className="md:row-span-2 backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-8
+                          flex flex-col gap-8 hover:bg-white/15 transition-colors duration-200">
+            <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-sky-400/20">
+              <Search className="size-7 text-sky-300" />
             </div>
             <div className="space-y-2.5 mt-auto">
-              <h3 className="text-xl font-semibold text-slate-800">Find the Right Doctor</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <h3 className="text-xl font-semibold text-white">Find the Right Doctor</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
                 Browse verified specialists by specialty, read profiles and reviews, and choose a provider that truly fits your needs.
               </p>
             </div>
           </div>
 
-          {/* Small card 1 */}
-          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl shadow-sm p-6 flex gap-4 items-start hover:shadow-md transition-shadow duration-200">
-            <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
-              <CalendarCheck className="size-5 text-emerald-600" />
+          {/* Small card 1 — emerald tinted glass */}
+          <div className="backdrop-blur-md bg-emerald-400/10 border border-emerald-300/25 rounded-2xl p-6
+                          flex gap-4 items-start hover:bg-emerald-400/15 transition-colors duration-200">
+            <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400/20">
+              <CalendarCheck className="size-5 text-emerald-300" />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-base font-semibold text-slate-800">Book in Minutes</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <h3 className="text-base font-semibold text-white">Book in Minutes</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
                 See real-time availability and confirm your slot instantly — no phone calls, no waiting rooms.
               </p>
             </div>
           </div>
 
-          {/* Small card 2 */}
-          <div className="bg-sky-50 border border-sky-100 rounded-2xl shadow-sm p-6 flex gap-4 items-start hover:shadow-md transition-shadow duration-200">
-            <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-100">
-              <Video className="size-5 text-sky-600" />
+          {/* Small card 2 — sky tinted glass */}
+          <div className="backdrop-blur-md bg-sky-400/10 border border-sky-300/25 rounded-2xl p-6
+                          flex gap-4 items-start hover:bg-sky-400/15 transition-colors duration-200">
+            <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/20">
+              <Video className="size-5 text-sky-300" />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-base font-semibold text-slate-800">Consult via Secure Video</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <h3 className="text-base font-semibold text-white">Consult via Secure Video</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
                 Private, encrypted sessions. Join your consultation from any device, right on time.
               </p>
             </div>
@@ -206,20 +216,26 @@ const STEPS = [
   {
     number: '01',
     icon: UserPlus,
+    glow: 'flip-card-sky',
     title: 'Create your account',
     description: 'Sign up as a patient or provider in under 2 minutes.',
+    backDetail: "Choose your role — patient or provider. Verify your email and complete your profile. You'll be connected to the VitalLink network in minutes.",
   },
   {
     number: '02',
     icon: BookOpen,
+    glow: 'flip-card-emerald',
     title: 'Browse and book a doctor',
     description: 'Search by specialty, pick an available slot, and confirm instantly.',
+    backDetail: 'Filter doctors by specialty, availability, or rating. Read full profiles and patient reviews. Pick a time slot that fits your schedule and confirm in one click.',
   },
   {
     number: '03',
     icon: MonitorPlay,
+    glow: 'flip-card-violet',
     title: 'Join your consultation',
     description: 'At appointment time, click Join — your doctor is ready in the secure video room.',
+    backDetail: 'At the scheduled time, click Join from your dashboard. Connect via encrypted video — no downloads needed. Your doctor will be there, ready to help.',
   },
 ];
 
@@ -231,24 +247,37 @@ function HowItWorksSection() {
       <div className="max-w-5xl mx-auto space-y-12">
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-800">How VitalLink works</h2>
-          <p className="text-slate-500">Three steps from sign-up to consultation.</p>
+          <p className="text-slate-500">Hover each step to learn more.</p>
         </div>
 
         <div ref={ref} className="reveal grid grid-cols-1 md:grid-cols-3 gap-6">
-          {STEPS.map(({ number, icon: Icon, title, description }, index) => (
-            <div key={number} className="relative">
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4 hover:shadow-md transition-shadow duration-200 h-full">
-                <div className="flex items-center gap-3">
-                  <span className="text-4xl font-semibold text-slate-100 select-none leading-none">
-                    {number}
-                  </span>
-                  <div className="flex size-9 items-center justify-center rounded-xl bg-sky-50">
-                    <Icon className="size-4 text-sky-500" />
+          {STEPS.map(({ number, icon: Icon, glow, title, description, backDetail }, index) => (
+            <div key={number} className={cn('flip-card relative', glow)}>
+              <div className="flip-card-inner rounded-2xl" style={{ minHeight: '220px' }}>
+                {/* Front */}
+                <div className="flip-card-front bg-white border border-slate-200 rounded-2xl shadow-sm p-6 flex flex-col gap-4 h-full">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl font-semibold text-slate-100 select-none leading-none">{number}</span>
+                    <div className="flex size-9 items-center justify-center rounded-xl bg-sky-50">
+                      <Icon className="size-4 text-sky-500" />
+                    </div>
                   </div>
+                  <div className="space-y-1.5 flex-1">
+                    <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
+                  </div>
+                  <p className="text-xs text-slate-400">Hover to learn more →</p>
                 </div>
-                <div className="space-y-1.5">
-                  <h3 className="text-base font-semibold text-slate-800">{title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
+
+                {/* Back */}
+                <div className="flip-card-back bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col justify-center gap-4 h-full">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-white/10">
+                    <Icon className="size-4 text-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-base font-semibold text-white">{title}</h3>
+                    <p className="text-sm text-slate-300 leading-relaxed">{backDetail}</p>
+                  </div>
                 </div>
               </div>
 

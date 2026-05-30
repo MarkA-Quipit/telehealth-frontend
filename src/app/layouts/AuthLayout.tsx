@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { HeartPulse } from 'lucide-react';
 
 const FEATURE_BULLETS = [
@@ -46,9 +47,19 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-10 bg-white">
-        <div className="w-full max-w-md">
-          {children}
+      <div className="flex-1 flex flex-col bg-white">
+        <div className="p-4 md:px-10 md:pt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-sky-600 transition-colors"
+          >
+            ← Back to VitalLink
+          </Link>
+        </div>
+        <div className="flex-1 flex items-center justify-center px-6 pb-10 md:px-10">
+          <div className="w-full max-w-lg">
+            {children}
+          </div>
         </div>
       </div>
     </div>

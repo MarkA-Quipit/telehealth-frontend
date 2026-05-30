@@ -17,9 +17,18 @@ import { cn } from '../../../shared/lib/utils';
 
 type Role = 'patient' | 'doctor';
 
-export function RegisterForm() {
+interface Props {
+  onRoleChange?: (role: Role) => void;
+}
+
+export function RegisterForm({ onRoleChange }: Props) {
   const { register } = useAuth();
   const [role, setRole] = React.useState<Role>('patient');
+
+  function handleRoleChange(r: Role) {
+    setRole(r);
+    onRoleChange?.(r);
+  }
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
   const [email, setEmail] = React.useState('');
@@ -65,7 +74,7 @@ export function RegisterForm() {
             <button
               key={r}
               type="button"
-              onClick={() => setRole(r)}
+              onClick={() => handleRoleChange(r)}
               className={cn(
                 'rounded-lg border py-2 text-sm font-medium capitalize transition-colors',
                 role === r
