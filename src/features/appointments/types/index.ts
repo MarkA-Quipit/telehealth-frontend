@@ -126,6 +126,9 @@ export interface PatientSearchFilters {
   bloodType?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'unknown';
   sex?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   minConsultations?: number;
+  maxConsultations?: number;
+  minAge?: number;
+  maxAge?: number;
   page?: number;
   limit?: number;
 }

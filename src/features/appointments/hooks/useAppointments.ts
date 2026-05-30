@@ -92,7 +92,8 @@ export function usePatientSearch(filters: PatientSearchFilters) {
     (filters.q?.trim().length ?? 0) >= 2 ||
     !!filters.bloodType ||
     !!filters.sex ||
-    filters.minConsultations != null;
+    filters.minConsultations != null ||
+    filters.maxConsultations != null;
 
   return useQuery({
     queryKey: QUERY_KEYS.appointments.patientSearch(filters.q ?? '', filters),

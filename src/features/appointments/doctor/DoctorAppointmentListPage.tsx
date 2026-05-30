@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAppointments, usePatientSearch } from '../hooks/useAppointments';
 import { AppointmentDataTable } from '../components/AppointmentDataTable';
 import { PatientSearchFilter } from '../components/PatientSearchFilter';
@@ -9,6 +8,7 @@ import { Avatar } from '@/shared/components/Avatar';
 import { MedicalPill } from '../components/MedicalPill';
 import { EmptyState } from '@/shared/components/EmptyState';
 import type { AppointmentStatus, PatientSearchFilters } from '../types';
+import { Link } from 'react-router-dom';
 
 const FILTER_TABS = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'] as const;
 type FilterTab = typeof FILTER_TABS[number];
@@ -21,10 +21,11 @@ const STATUS_MAP: Record<FilterTab, AppointmentStatus | undefined> = {
   Cancelled: 'cancelled',
 };
 
+interface PatientSearchResultsProps {
+  filters: PatientSearchFilters;
+}
 
-
-
-function PatientSearchResults({ filters }: { filters: PatientSearchFilters }) {
+function PatientSearchResults({ filters }: PatientSearchResultsProps) {
   const { data, isLoading } = usePatientSearch(filters);
   const patients = data?.items ?? [];
 
@@ -129,7 +130,8 @@ export function DoctorAppointmentListPage() {
     (searchFilters.q?.length ?? 0) >= 2 ||
     !!searchFilters.bloodType ||
     !!searchFilters.sex ||
-    searchFilters.minConsultations != null;
+    searchFilters.minConsultations != null ||
+    searchFilters.maxConsultations != null;
 
   const status = STATUS_MAP[activeTab];
   const { data, isLoading } = useAppointments(status ? { status } : undefined);
@@ -144,7 +146,10 @@ export function DoctorAppointmentListPage() {
       </div>
 
       {/* Patient filter panel */}
-      <PatientSearchFilter filters={searchFilters} onChange={setSearchFilters} />
+      <PatientSearchFilter
+        filters={searchFilters}
+        onChange={setSearchFilters}
+      />
 
       {isSearching ? (
         <PatientSearchResults filters={searchFilters} />
@@ -161,6 +166,7 @@ export function DoctorAppointmentListPage() {
               appointments={items}
               role="doctor"
               detailBasePath="/doctor/appointments"
+              defaultSortDir="desc"
             />
           ) : (
             <EmptyState

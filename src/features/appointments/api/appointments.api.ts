@@ -86,6 +86,9 @@ export async function searchPatients(
   if (filters.bloodType) params.set('bloodType', filters.bloodType);
   if (filters.sex) params.set('sex', filters.sex);
   if (filters.minConsultations != null) params.set('minConsultations', String(filters.minConsultations));
+  if (filters.maxConsultations != null) params.set('maxConsultations', String(filters.maxConsultations));
+  if (filters.minAge != null) params.set('minAge', String(filters.minAge));
+  if (filters.maxAge != null) params.set('maxAge', String(filters.maxAge));
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
   const { data } = await api.get(`/api/appointments/patients/search?${params.toString()}`);

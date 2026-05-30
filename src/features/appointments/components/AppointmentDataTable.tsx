@@ -16,7 +16,9 @@ interface Column {
 interface AppointmentDataTableProps {
   appointments: AppointmentWithDetails[];
   role: 'patient' | 'doctor';
-  detailBasePath: string; // e.g. '/patient/appointments' or '/doctor/appointments'
+  detailBasePath: string;
+  defaultSortKey?: SortKey;
+  defaultSortDir?: SortDir;
 }
 
 function SortIcon({ dir }: { dir: SortDir | null }) {
@@ -39,10 +41,10 @@ function getSortValue(appt: AppointmentWithDetails, key: SortKey, role: 'patient
   }
 }
 
-export function AppointmentDataTable({ appointments, role, detailBasePath }: AppointmentDataTableProps) {
+export function AppointmentDataTable({ appointments, role, detailBasePath, defaultSortKey, defaultSortDir }: AppointmentDataTableProps) {
   const navigate = useNavigate();
-  const [sortKey, setSortKey] = useState<SortKey>('date');
-  const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [sortKey, setSortKey] = useState<SortKey>(defaultSortKey ?? 'date');
+  const [sortDir, setSortDir] = useState<SortDir>(defaultSortDir ?? 'asc');
 
   const COLUMNS: Column[] = [
     { key: 'name', label: role === 'patient' ? 'Doctor' : 'Patient', sortable: true },
