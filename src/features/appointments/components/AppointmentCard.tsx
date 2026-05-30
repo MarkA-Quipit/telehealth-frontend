@@ -31,7 +31,7 @@ export function AppointmentCard({ appointment, role }: Props) {
 
   return (
     <div
-      className={`border-l-4 ${borderColor} bg-white border border-neutral-200 rounded-xl shadow-sm p-4`}
+      className={`border-l-4 ${borderColor} bg-white border border-neutral-200 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow duration-150`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">

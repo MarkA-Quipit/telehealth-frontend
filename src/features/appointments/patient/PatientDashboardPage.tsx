@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { CalendarDays, Clock, CheckCircle2 } from 'lucide-react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser } from '@/features/users/hooks/useUser';
 import { useAppointments } from '../hooks/useAppointments';
@@ -6,6 +7,7 @@ import { AppointmentCard } from '../components/AppointmentCard';
 import { AppointmentSkeletonCard } from '../components/AppointmentSkeletonCard';
 import { Button } from '@/shared/ui/button';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { cn } from '@/shared/lib/utils';
 
 const CAP = 5;
 
@@ -63,18 +65,21 @@ export function PatientDashboardPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-sky-50 border border-sky-100 rounded-xl p-4">
-          <p className="text-2xl font-semibold text-sky-700">{isLoading ? '—' : todayCount}</p>
-          <p className="text-sm text-sky-600 mt-1">Today's</p>
-        </div>
-        <div className="bg-violet-50 border border-violet-100 rounded-xl p-4">
-          <p className="text-2xl font-semibold text-violet-700">{isLoading ? '—' : upcomingCount}</p>
-          <p className="text-sm text-violet-600 mt-1">Upcoming</p>
-        </div>
-        <div className="bg-green-50 border border-green-100 rounded-xl p-4">
-          <p className="text-2xl font-semibold text-green-700">{completedCount}</p>
-          <p className="text-sm text-green-600 mt-1">Completed</p>
-        </div>
+        {[
+          { icon: CalendarDays, iconBg: 'bg-sky-50',   iconColor: 'text-sky-500',   count: isLoading ? '—' : todayCount,    label: "Today's" },
+          { icon: Clock,        iconBg: 'bg-amber-50',  iconColor: 'text-amber-500', count: isLoading ? '—' : upcomingCount, label: 'Upcoming' },
+          { icon: CheckCircle2, iconBg: 'bg-green-50',  iconColor: 'text-green-600', count: completedCount,                  label: 'Completed' },
+        ].map(({ icon: Icon, iconBg, iconColor, count, label }) => (
+          <div key={label} className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-150">
+            <div className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl', iconBg)}>
+              <Icon className={cn('size-5', iconColor)} />
+            </div>
+            <div>
+              <p className="text-2xl font-semibold text-slate-800">{count}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Today + Upcoming — 2 columns */}

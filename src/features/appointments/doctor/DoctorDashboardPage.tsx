@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle, CalendarDays, CalendarRange, CheckCircle2 } from 'lucide-react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { useUser } from '@/features/users/hooks/useUser';
 import { useAppointments } from '../hooks/useAppointments';
 import { AppointmentCard } from '../components/AppointmentCard';
 import { AppointmentSkeletonCard } from '../components/AppointmentSkeletonCard';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { cn } from '@/shared/lib/utils';
 
 const CAP = 5;
 
@@ -76,22 +78,22 @@ export function DoctorDashboardPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-          <p className="text-2xl font-semibold text-amber-700">{isLoading ? '—' : pendingCount}</p>
-          <p className="text-sm text-amber-600 mt-1">Pending today</p>
-        </div>
-        <div className="bg-sky-50 border border-sky-100 rounded-xl p-4">
-          <p className="text-2xl font-semibold text-sky-700">{isLoading ? '—' : confirmedCount}</p>
-          <p className="text-sm text-sky-600 mt-1">Confirmed today</p>
-        </div>
-        <div className="bg-violet-50 border border-violet-100 rounded-xl p-4">
-          <p className="text-2xl font-semibold text-violet-700">{isLoading ? '—' : thisWeekCount}</p>
-          <p className="text-sm text-violet-600 mt-1">This week</p>
-        </div>
-        <div className="bg-green-50 border border-green-100 rounded-xl p-4">
-          <p className="text-2xl font-semibold text-green-700">{completedAllTime}</p>
-          <p className="text-sm text-green-600 mt-1">Completed all-time</p>
-        </div>
+        {[
+          { icon: AlertCircle,   iconBg: 'bg-amber-50', iconColor: 'text-amber-500', count: isLoading ? '—' : pendingCount,   label: 'Pending today' },
+          { icon: CalendarDays,  iconBg: 'bg-sky-50',   iconColor: 'text-sky-500',   count: isLoading ? '—' : confirmedCount, label: 'Confirmed today' },
+          { icon: CalendarRange, iconBg: 'bg-sky-50',   iconColor: 'text-sky-500',   count: isLoading ? '—' : thisWeekCount,  label: 'This week' },
+          { icon: CheckCircle2,  iconBg: 'bg-green-50', iconColor: 'text-green-600', count: completedAllTime,                 label: 'Completed all-time' },
+        ].map(({ icon: Icon, iconBg, iconColor, count, label }) => (
+          <div key={label} className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-150">
+            <div className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl', iconBg)}>
+              <Icon className={cn('size-5', iconColor)} />
+            </div>
+            <div>
+              <p className="text-2xl font-semibold text-slate-800">{count}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Appointments: Today + Upcoming side by side */}

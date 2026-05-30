@@ -157,3 +157,49 @@
 @media (prefers-reduced-motion: reduce) {
   .page-enter > *, .animate-row-in { animation: none; opacity: 1; }
 }
+
+/* ── Landing page motion (public pages only — never use inside authenticated app) ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* hero-content: auto-staggers direct children with fade-up */
+.hero-content > * {
+  opacity: 0;
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero-content > *:nth-child(1) { animation-delay:   0ms; }
+.hero-content > *:nth-child(2) { animation-delay: 100ms; }
+.hero-content > *:nth-child(3) { animation-delay: 200ms; }
+.hero-content > *:nth-child(4) { animation-delay: 300ms; }
+.hero-content > *:nth-child(5) { animation-delay: 400ms; }
+
+/* reveal: scroll-triggered fade-up via IntersectionObserver */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay:  80ms; }
+.reveal-delay-2 { transition-delay: 180ms; }
+.reveal-delay-3 { transition-delay: 280ms; }
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-content > * { animation: none; opacity: 1; }
+  .reveal, .reveal.visible { transition: none; opacity: 1; transform: none; }
+  .animate-float { animation: none; }
+}

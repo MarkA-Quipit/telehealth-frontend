@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { HeartPulse } from 'lucide-react';
 import { AuthLayout } from '../../../app/layouts/AuthLayout';
 import { RegisterForm } from '../components/RegisterForm';
@@ -14,9 +13,6 @@ export function RegisterPage() {
         <p className="mt-1 text-sm text-muted-foreground">Join VitalLink today</p>
       </div>
       <RegisterForm />
-      <p className="mt-6 text-center text-xs text-slate-400">
-        <Link to="/" className="hover:text-sky-600 transition-colors">← Back to VitalLink</Link>
-      </p>
     </AuthLayout>
   );
 }
