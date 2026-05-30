@@ -91,7 +91,7 @@ export function ProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
-        {/* Left column — identity + doctor availability toggle */}
+        {/* Left column — identity + patient extras */}
         <div className="lg:sticky lg:top-6 space-y-4">
           <ProfilePhotoSection user={fullUser} />
 
@@ -126,6 +126,10 @@ export function ProfilePage() {
               </div>
             </div>
           )}
+
+          {!isDoctor && patient && (
+            <PatientDocumentsSection patientId={patient.id} />
+          )}
         </div>
 
         {/* Right column — editable sections */}
@@ -155,7 +159,6 @@ export function ProfilePage() {
                   onDirtyChange={handleMedicalDirtyChange}
                 />
               )}
-              {patient && <PatientDocumentsSection patientId={patient.id} />}
             </>
           )}
         </div>

@@ -35,8 +35,10 @@ export function DoctorListPage() {
   const { user } = useAuthContext();
   const isPatient = user?.roles.includes('patient') ?? false;
 
-  const [filters, setFilters] = useState<DoctorFilters>({ page: 1, limit: 9 });
-  const rowsPerPage = filters.limit ?? 9;
+  const defaultLimit = window.matchMedia('(max-width: 767px)').matches ? 5 : 9;
+  const cardsPerPageOptions = defaultLimit === 5 ? [5, 10, 15] : [9, 18, 27];
+  const [filters, setFilters] = useState<DoctorFilters>({ page: 1, limit: defaultLimit });
+  const rowsPerPage = filters.limit ?? defaultLimit;
   const { data, isLoading } = useDoctors(filters);
 
   const totalPages = data?.totalPages ?? 1;
@@ -51,7 +53,7 @@ export function DoctorListPage() {
       {/* Header — AI trigger lives here (top-right) for patients */}
       {isPatient ? (
         <Collapsible defaultOpen={false}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Find a Doctor</h1>
               <p className="text-sm text-neutral-500">
@@ -59,7 +61,7 @@ export function DoctorListPage() {
               </p>
             </div>
             <CollapsibleTrigger asChild>
-              <Button variant="secondary" className="flex items-center gap-2 shrink-0">
+              <Button variant="secondary" className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                 <Sparkles className="h-4 w-4 text-sky-500" />
                 Find doctors by symptoms
               </Button>
@@ -125,7 +127,8 @@ export function DoctorListPage() {
           page={currentPage}
           totalPages={totalPages}
           rowsPerPage={rowsPerPage}
-          rowsPerPageOptions={[9, 18, 27]}
+          rowsPerPageOptions={cardsPerPageOptions}
+          perPageLabel="Cards per page:"
           onPageChange={(p) => handleFilterChange({ page: p })}
           onRowsPerPageChange={(limit) => handleFilterChange({ limit, page: 1 })}
         />

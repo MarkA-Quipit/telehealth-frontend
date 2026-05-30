@@ -103,9 +103,11 @@ export function DoctorProfessionalInfoSection({ doctor, collapsible, onDirtyChan
         <Input {...register('licenseNumber')} className="h-10" placeholder="Professional license number" />
       </div>
 
-      <Button type="submit" disabled={isPending} className="disabled:cursor-not-allowed">
-        {isPending ? 'Saving…' : 'Save Changes'}
-      </Button>
+      {isDirty && (
+        <Button type="submit" disabled={isPending} className="disabled:cursor-not-allowed">
+          {isPending ? 'Saving…' : 'Save Changes'}
+        </Button>
+      )}
     </div>
   );
 

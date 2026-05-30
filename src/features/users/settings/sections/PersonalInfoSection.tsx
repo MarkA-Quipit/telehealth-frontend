@@ -73,11 +73,13 @@ export function PersonalInfoSection({ user, collapsible, onDirtyChange }: Person
         <label className="text-sm font-medium text-neutral-700">Phone Number</label>
         <Input {...register('phone')} type="tel" className="h-10" placeholder="Enter phone number" />
       </div>
-      <div className="sm:col-span-2">
-        <Button type="submit" disabled={isPending} className="disabled:cursor-not-allowed">
-          {isPending ? 'Saving…' : 'Save Changes'}
-        </Button>
-      </div>
+      {isDirty && (
+        <div className="sm:col-span-2">
+          <Button type="submit" disabled={isPending} className="disabled:cursor-not-allowed">
+            {isPending ? 'Saving…' : 'Save Changes'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 

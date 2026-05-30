@@ -14,7 +14,7 @@ import type { AppointmentWithDetails } from '../types';
 const TABS = ['Upcoming', 'Past'] as const;
 type Tab = typeof TABS[number];
 
-type DatePeriod = 'all' | 'today' | 'week' | 'month';
+type DatePeriod = 'all' | 'today' | 'week' | 'month' | 'nextMonth';
 
 function getDateBounds(period: DatePeriod): { from?: Date; to?: Date } {
   if (period === 'all') return {};
@@ -33,6 +33,11 @@ function getDateBounds(period: DatePeriod): { from?: Date; to?: Date } {
     sunday.setDate(monday.getDate() + 6);
     sunday.setHours(23, 59, 59, 999);
     return { from: monday, to: sunday };
+  }
+  if (period === 'nextMonth') {
+    const from = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const to   = new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59, 999);
+    return { from, to };
   }
   // month
   const from = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -125,7 +130,7 @@ export function AppointmentListPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">My Appointments</h1>
           <p className="text-sm text-neutral-500">Track and manage your consultations</p>
@@ -140,7 +145,7 @@ export function AppointmentListPage() {
 
       {/* Filter bar */}
       <div className={`relative bg-white border border-neutral-200 rounded-xl shadow-sm p-4 ${hasActiveFilters ? 'pb-8' : ''}`}>
-        <div className="flex items-end gap-2 overflow-x-auto">
+        <div className="flex flex-wrap items-end gap-2 sm:flex-nowrap sm:overflow-x-auto">
           <div className="space-y-1 flex-1 min-w-[160px]">
             <label className="text-xs font-medium text-neutral-500">Search doctor</label>
             <Input
@@ -177,6 +182,7 @@ export function AppointmentListPage() {
               <option value="today">Today</option>
               <option value="week">This week</option>
               <option value="month">This month</option>
+              <option value="nextMonth">Next month</option>
             </Select>
           </div>
         </div>

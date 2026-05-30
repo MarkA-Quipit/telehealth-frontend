@@ -170,8 +170,8 @@ export function AppointmentDetailPage() {
     appointment?.doctor.id,
     rescheduleDate || undefined,
   );
-  const { data: notes } = useNotes(appointment?.status === 'completed' ? id : null);
-  const { data: prescriptions } = usePrescriptions(appointment?.status === 'completed' ? id : null);
+  const { data: notes } = useNotes(id);
+  const { data: prescriptions } = usePrescriptions(id);
 
   if (isLoading) return <SkeletonPage />;
   if (!appointment) {
@@ -243,39 +243,16 @@ export function AppointmentDetailPage() {
     }
   }
 
+  const isCompleted = appointment.status === 'completed';
+
   return (
-    <div className="space-y-5 max-w-2xl mx-auto">
+    <div className="space-y-5">
       {/* Back link */}
       <Link to="/patient/appointments" className="inline-flex items-center text-sm text-neutral-500 hover:text-neutral-700 transition">
         ← My Appointments
       </Link>
 
-      {/* Header card */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center shrink-0 text-sky-700 font-semibold">
-            {appointment.doctor.profilePictureUrl ? (
-              <img src={appointment.doctor.profilePictureUrl} className="w-full h-full object-cover rounded-full" alt="" />
-            ) : (
-              `${appointment.doctor.firstName[0]}${appointment.doctor.lastName[0]}`
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-base font-semibold text-neutral-900">
-              Dr. {appointment.doctor.firstName} {appointment.doctor.lastName}
-            </p>
-            <p className="text-sm text-neutral-500">{appointment.doctor.specialization}</p>
-            <p className="text-sm text-neutral-700 mt-1">
-              {formatDateLong(appointment.scheduledAt)}
-              {' · '}
-              {formatTime(appointment.scheduledAt)}
-            </p>
-          </div>
-          <AppointmentStatusBadge status={appointment.status as 'pending' | 'confirmed' | 'cancelled' | 'completed'} />
-        </div>
-      </div>
-
-      {/* Join session */}
+      {/* Join session — full width when visible */}
       {isConfirmed && (
         <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
           <h3 className="text-base font-semibold text-neutral-900 mb-3">Video Consultation</h3>
@@ -297,156 +274,201 @@ export function AppointmentDetailPage() {
         </div>
       )}
 
-      {/* Appointment details */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-neutral-900">Details</h3>
+      {/* 2-column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+
+        {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
+        <div className="space-y-5">
+          {/* Doctor info */}
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center shrink-0 text-sky-700 font-semibold">
+                {appointment.doctor.profilePictureUrl ? (
+                  <img src={appointment.doctor.profilePictureUrl} className="w-full h-full object-cover rounded-full" alt="" />
+                ) : (
+                  `${appointment.doctor.firstName[0]}${appointment.doctor.lastName[0]}`
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-semibold text-neutral-900">
+                  Dr. {appointment.doctor.firstName} {appointment.doctor.lastName}
+                </p>
+                <p className="text-sm text-neutral-500">{appointment.doctor.specialization}</p>
+                <p className="text-sm text-neutral-700 mt-1">
+                  {formatDateLong(appointment.scheduledAt)}
+                  {' · '}
+                  {formatTime(appointment.scheduledAt)}
+                </p>
+              </div>
+              <AppointmentStatusBadge status={appointment.status as 'pending' | 'confirmed' | 'cancelled' | 'completed'} />
+            </div>
+          </div>
+
+          {/* Details */}
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-neutral-900">Details</h3>
+              {isActionable && (
+                <button
+                  onClick={handleCalendarDownload}
+                  className="text-xs font-medium text-sky-700 hover:text-sky-600 transition"
+                >
+                  + Add to Calendar
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-neutral-500">Reason for visit</p>
+                <p className="text-neutral-800 mt-0.5">{appointment.reasonForVisit ?? 'No reason provided'}</p>
+              </div>
+              <div>
+                <p className="text-neutral-500">Duration</p>
+                <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-2.5 py-0.5 text-xs font-medium">
+                  {formatDuration(appointment.durationMinutes)} session
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Cancel + Reschedule */}
           {isActionable && (
-            <button
-              onClick={handleCalendarDownload}
-              className="text-xs font-medium text-sky-700 hover:text-sky-600 transition"
-            >
-              + Add to Calendar
-            </button>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-neutral-500">Reason for visit</p>
-            <p className="text-neutral-800 mt-0.5">{appointment.reasonForVisit ?? 'No reason provided'}</p>
-          </div>
-          <div>
-            <p className="text-neutral-500">Duration</p>
-            <span className="mt-1 inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-2.5 py-0.5 text-xs font-medium">
-              {formatDuration(appointment.durationMinutes)} session
-            </span>
-          </div>
-        </div>
-      </div>
+            <div className="flex gap-3">
+              {/* Reschedule */}
+              <Dialog.Root open={rescheduleOpen} onOpenChange={handleRescheduleOpenChange}>
+                <Dialog.Trigger asChild>
+                  <Button variant="secondary" className="flex-1 py-2.5">
+                    Reschedule
+                  </Button>
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+                  <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-md p-6 z-50 space-y-4">
+                    <Dialog.Title className="text-base font-semibold text-neutral-900">
+                      Reschedule Appointment
+                    </Dialog.Title>
 
-      {/* Cancel + Reschedule — shown when pending or confirmed */}
-      {isActionable && (
-        <div className="flex gap-3">
-          {/* Reschedule */}
-          <Dialog.Root open={rescheduleOpen} onOpenChange={handleRescheduleOpenChange}>
-            <Dialog.Trigger asChild>
-              <Button variant="secondary" className="flex-1 py-2.5">
-                Reschedule
-              </Button>
-            </Dialog.Trigger>
-            <Dialog.Portal>
-              <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-              <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-md p-6 z-50 space-y-4">
-                <Dialog.Title className="text-base font-semibold text-neutral-900">
-                  Reschedule Appointment
-                </Dialog.Title>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-neutral-700">Select a new date</label>
+                      <input
+                        type="date"
+                        value={rescheduleDate}
+                        min={new Date().toISOString().split('T')[0]}
+                        onChange={(e) => { setRescheduleDate(e.target.value); setRescheduleSlot(''); }}
+                        className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
+                      />
+                    </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-neutral-700">Select a new date</label>
-                  <input
-                    type="date"
-                    value={rescheduleDate}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => { setRescheduleDate(e.target.value); setRescheduleSlot(''); }}
-                    className="w-full h-10 rounded-lg bg-neutral-100 px-3 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition"
-                  />
-                </div>
-
-                {rescheduleDate && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-neutral-700">Available slots</p>
-                    {slotsFetching ? (
-                      <p className="text-sm text-neutral-400">Loading slots…</p>
-                    ) : availableSlots.length === 0 ? (
-                      <p className="text-sm text-neutral-500">No available slots on this date.</p>
-                    ) : (
-                      <div className="grid grid-cols-3 gap-2">
-                        {availableSlots.map((slot) => (
-                          <button
-                            key={slot.startTime}
-                            type="button"
-                            onClick={() => setRescheduleSlot(slot.startTime)}
-                            className={`rounded-lg px-2 py-1.5 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
-                              rescheduleSlot === slot.startTime
-                                ? 'bg-sky-100 text-sky-700 ring-1 ring-sky-400'
-                                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                            }`}
-                          >
-                            {new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </button>
-                        ))}
+                    {rescheduleDate && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-neutral-700">Available slots</p>
+                        {slotsFetching ? (
+                          <p className="text-sm text-neutral-400">Loading slots…</p>
+                        ) : availableSlots.length === 0 ? (
+                          <p className="text-sm text-neutral-500">No available slots on this date.</p>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-2">
+                            {availableSlots.map((slot) => (
+                              <button
+                                key={slot.startTime}
+                                type="button"
+                                onClick={() => setRescheduleSlot(slot.startTime)}
+                                className={`rounded-lg px-2 py-1.5 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
+                                  rescheduleSlot === slot.startTime
+                                    ? 'bg-sky-100 text-sky-700 ring-1 ring-sky-400'
+                                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                                }`}
+                              >
+                                {new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
-                )}
 
-                <div className="flex gap-3">
-                  <Dialog.Close asChild>
-                    <Button variant="secondary" className="flex-1">Keep Appointment</Button>
-                  </Dialog.Close>
-                  <Button
-                    onClick={handleReschedule}
-                    disabled={!rescheduleSlot || rescheduleMutation.isPending}
-                    className="flex-1 disabled:cursor-not-allowed"
-                  >
-                    {rescheduleMutation.isPending ? 'Rescheduling…' : 'Confirm'}
-                  </Button>
-                </div>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
+                    <div className="flex gap-3">
+                      <Dialog.Close asChild>
+                        <Button variant="secondary" className="flex-1">Keep Appointment</Button>
+                      </Dialog.Close>
+                      <Button
+                        onClick={handleReschedule}
+                        disabled={!rescheduleSlot || rescheduleMutation.isPending}
+                        className="flex-1 disabled:cursor-not-allowed"
+                      >
+                        {rescheduleMutation.isPending ? 'Rescheduling…' : 'Confirm'}
+                      </Button>
+                    </div>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
 
-          {/* Cancel */}
-          <Dialog.Root open={cancelOpen} onOpenChange={setCancelOpen}>
-            <Dialog.Trigger asChild>
-              <Button variant="destructive" className="flex-1 py-2.5">
-                Cancel Appointment
-              </Button>
-            </Dialog.Trigger>
-            <Dialog.Portal>
-              <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-              <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-md p-6 z-50 space-y-4">
-                <Dialog.Title className="text-base font-semibold text-neutral-900">
-                  Cancel Appointment
-                </Dialog.Title>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-neutral-700">
-                    Reason for cancellation (optional)
-                  </label>
-                  <textarea
-                    value={cancelReason}
-                    onChange={(e) => setCancelReason(e.target.value)}
-                    rows={3}
-                    placeholder="Reason for cancellation (optional)"
-                    className="w-full rounded-lg bg-neutral-100 px-3 py-2 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition resize-none"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <Dialog.Close asChild>
-                    <Button variant="secondary" className="flex-1">Keep Appointment</Button>
-                  </Dialog.Close>
-                  <Button
-                    variant="destructive"
-                    onClick={handleCancel}
-                    disabled={cancelMutation.isPending}
-                    className="flex-1"
-                  >
-                    {cancelMutation.isPending ? 'Cancelling…' : 'Cancel Appointment'}
+              {/* Cancel */}
+              <Dialog.Root open={cancelOpen} onOpenChange={setCancelOpen}>
+                <Dialog.Trigger asChild>
+                  <Button variant="destructive" className="flex-1 py-2.5">
+                    Cancel Appointment
                   </Button>
-                </div>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+                  <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-xl shadow-md p-6 z-50 space-y-4">
+                    <Dialog.Title className="text-base font-semibold text-neutral-900">
+                      Cancel Appointment
+                    </Dialog.Title>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-neutral-700">
+                        Reason for cancellation (optional)
+                      </label>
+                      <textarea
+                        value={cancelReason}
+                        onChange={(e) => setCancelReason(e.target.value)}
+                        rows={3}
+                        placeholder="Reason for cancellation (optional)"
+                        className="w-full rounded-lg bg-neutral-100 px-3 py-2 text-sm focus:bg-white focus:border focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition resize-none"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <Dialog.Close asChild>
+                        <Button variant="secondary" className="flex-1">Keep Appointment</Button>
+                      </Dialog.Close>
+                      <Button
+                        variant="destructive"
+                        onClick={handleCancel}
+                        disabled={cancelMutation.isPending}
+                        className="flex-1"
+                      >
+                        {cancelMutation.isPending ? 'Cancelling…' : 'Cancel Appointment'}
+                      </Button>
+                    </div>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
+            </div>
+          )}
+
+          {/* Review — always shown; disabled if not completed */}
+          <div className={isCompleted ? undefined : 'opacity-50 pointer-events-none select-none'}>
+            {isCompleted ? (
+              <LeaveReviewSection
+                appointmentId={appointment.id}
+                doctorId={appointment.doctor.id}
+              />
+            ) : (
+              <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
+                <h3 className="text-base font-semibold text-neutral-900">Leave a Review</h3>
+                <p className="text-sm text-neutral-400">Available after the consultation is completed.</p>
+              </div>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* Medical records — completed only */}
-      {appointment.status === 'completed' && (
-        <>
+        {/* ── RIGHT COLUMN ────────────────────────────────────────── */}
+        <div className="space-y-5">
           {/* Consultation notes */}
           <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
             <h3 className="text-base font-semibold text-neutral-900">Consultation Notes</h3>
-            {notes ? (
+            {isCompleted && notes ? (
               <dl className="space-y-2 text-sm">
                 {notes.chiefComplaint && (
                   <div>
@@ -474,14 +496,16 @@ export function AppointmentDetailPage() {
                 )}
               </dl>
             ) : (
-              <p className="text-sm text-neutral-500">No consultation notes available</p>
+              <p className="text-sm text-neutral-400">
+                {isCompleted ? 'No consultation notes available.' : 'Available after the consultation is completed.'}
+              </p>
             )}
           </div>
 
           {/* Prescriptions */}
           <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 space-y-3">
             <h3 className="text-base font-semibold text-neutral-900">Prescriptions</h3>
-            {prescriptions && prescriptions.length > 0 ? (
+            {isCompleted && prescriptions && prescriptions.length > 0 ? (
               <ul className="space-y-3">
                 {prescriptions.map((rx) => (
                   <li key={rx.id} className="text-sm border-b border-neutral-100 pb-3 last:border-0 last:pb-0">
@@ -496,17 +520,14 @@ export function AppointmentDetailPage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-neutral-500">No prescriptions issued</p>
+              <p className="text-sm text-neutral-400">
+                {isCompleted ? 'No prescriptions issued.' : 'Available after the consultation is completed.'}
+              </p>
             )}
           </div>
+        </div>
 
-          {/* Leave a Review */}
-          <LeaveReviewSection
-            appointmentId={appointment.id}
-            doctorId={appointment.doctor.id}
-          />
-        </>
-      )}
+      </div>
     </div>
   );
 }

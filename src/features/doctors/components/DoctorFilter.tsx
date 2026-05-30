@@ -71,7 +71,7 @@ export function DoctorFilter({ filters, onFilterChange }: DoctorFilterProps) {
   return (
     <div className={`relative bg-white border border-neutral-200 rounded-xl shadow-sm p-4 ${hasActiveFilters ? 'pb-8' : ''}`}>
       {/* Filters row */}
-      <div className="flex items-end gap-2 overflow-x-auto">
+      <div className="flex flex-wrap items-end gap-2 sm:flex-nowrap sm:overflow-x-auto">
         {/* Search input */}
         <div className="space-y-1 flex-1 min-w-[140px]">
           <label className="text-xs font-medium text-neutral-500">Search</label>

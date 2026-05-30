@@ -86,18 +86,6 @@ export function SymptomChecker() {
         </p>
       )}
 
-      {/* Streaming text — visible while tokens arrive */}
-      {(isStreaming || (streamingText && !streamResult)) && (
-        <div className="border border-neutral-200 rounded-lg p-3 bg-neutral-50">
-          <p className="text-sm text-neutral-700 whitespace-pre-wrap leading-relaxed">
-            {streamingText}
-            {isStreaming && (
-              <span className="inline-block w-1.5 h-4 bg-sky-400 ml-0.5 align-text-bottom animate-pulse" />
-            )}
-          </p>
-        </div>
-      )}
-
       {/* Recent searches */}
       {history && history.length > 0 && (
         <div className="border-t border-neutral-100 pt-3">

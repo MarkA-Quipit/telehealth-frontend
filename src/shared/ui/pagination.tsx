@@ -8,6 +8,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (rows: number) => void;
   rowsPerPageOptions?: number[];
+  perPageLabel?: string;
 }
 
 export function Pagination({
@@ -17,12 +18,13 @@ export function Pagination({
   onPageChange,
   onRowsPerPageChange,
   rowsPerPageOptions = [10, 20, 30],
+  perPageLabel = 'Rows per page:',
 }: PaginationProps) {
   return (
     <div className="flex items-center justify-between pt-2">
       {/* Left — rows per page */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-neutral-500 whitespace-nowrap">Rows per page:</span>
+        <span className="text-sm text-neutral-500 whitespace-nowrap">{perPageLabel}</span>
         <Select
           value={String(rowsPerPage)}
           onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
